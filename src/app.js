@@ -2,7 +2,7 @@
 // (I like to use use screaming snake case for imported json)
 // import MY_DATA from './app/data/example.json'
 
-import {filter_data} from './utils';
+import {filter_geog, get_color} from './utils';
 import {get_cats} from './utils';
 import {json} from 'd3-fetch';
 import {select} from 'd3-selection';
@@ -56,7 +56,7 @@ function myVis(data) {
   console.log(data);
 
   // THESE CONSTANTS WILL NEED TO BE DYNAMIC TO THE DROPDOWNS
-  const tx = filter_data(source, 'United States');
+  const tx = filter_geog(source, 'Texas');
   const cat = get_cats(tx, 'src');
   console.log(cat);
 
@@ -143,11 +143,11 @@ function myVis(data) {
     .data((d) => [d])
     .join('path')
     .attr('d', (d) => lineScale(d))
-    .attr('stroke', (d) => {
-      const key = d[0]['src'];
-      console.log(key);
-      return srcColors(key);
-    })
+    .attr('stroke', (d) => srcColors(get_color(d)))
+    // .attr('stroke', (d) => {
+    //   const key = d[0]['src'];
+    //   return srcColors(key);
+    // })
     .attr('fill', 'none');
 
   // Generate the Vis in SVG
