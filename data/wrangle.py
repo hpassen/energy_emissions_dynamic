@@ -286,7 +286,7 @@ def prep_for_js():
     data = build_full()
     gb = ["state", "year"]
 
-    src = data[gb + ["src"] + VARS["gen"]]
+    src = data.groupby(gb + ["src"])[VARS["gen"]].sum().reset_index()
     src_tot = data.groupby(["year", "src"])[VARS["gen"]].sum()
     src_tot = src_tot.reset_index()
     src_tot["state"] = "United States"
