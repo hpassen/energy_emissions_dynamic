@@ -41,6 +41,7 @@ Promise.all(
 // Data Constants
 const xCol = 'year';
 const yCol = 'gen_mwh';
+const geog_start = 'United States';
 
 // Set up Plot Constants
 const width = 600;
@@ -54,6 +55,17 @@ function myVis(data) {
   const [emissions, renewables, source] = data;
   console.log(plotHeight, plotWidth);
   console.log(data);
+
+  // trying the dropdowns
+  const geog_dd = select('#ux')
+    .append('div')
+    .style('display', 'flex')
+    .style('flex-direction', 'row')
+    .selectAll('.drop-down')
+    .data(['United States'])
+    .join('div');
+
+  geog_dd.append('div').text((d) => d);
 
   // THESE CONSTANTS WILL NEED TO BE DYNAMIC TO THE DROPDOWNS
   const tx = filter_geog(source, 'Texas');
@@ -110,7 +122,7 @@ function myVis(data) {
   const emitColors = scaleOrdinal().range(['#525951']);
 
   // Containers for the Plot
-  const chart = select('#interact')
+  const chart = select('#dynamic')
     .append('svg')
     .attr('class', 'chart')
     .attr('height', height + 20)
@@ -133,7 +145,7 @@ function myVis(data) {
     .attr('class', 'plotContainer')
     .attr('transform', `translate(${margin.left}, 0)`);
 
-  const legend = select('#interact')
+  const legend = select('#dynamic')
     .append('svg')
     .attr('class', 'legend')
     .attr('height', height + 20)

@@ -43,15 +43,37 @@ p {
   margin-left: 15%;
 }
 
-#interact {
+#interactive {
   display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
   /* width: 100%; */
   margin-right: 15%;
   margin-left: 15%;
   border: thin solid black
+}
+
+#ux {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  /* margin-right: 15%;
+  margin-left: 15%; */
+  border: thin solid purple
+}
+
+#dynamic {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  /* margin-right: 15%;
+  margin-left: 15%; */
+  border: thin solid red
 }
 
 .bump_bottom {
