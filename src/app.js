@@ -45,7 +45,7 @@ const yCol = 'gen_mwh';
 // Set up Plot Constants
 const width = 600;
 const height = (24 / 36) * width;
-const margin = {top: 20, bottom: 20, right: 20, left: 20};
+const margin = {top: 30, bottom: 30, right: 80, left: 20};
 const plotHeight = height - margin.top - margin.bottom;
 const plotWidth = width - margin.left - margin.right;
 
@@ -110,26 +110,37 @@ function myVis(data) {
   const emitColors = scaleOrdinal().range(['#525951']);
 
   // Containers for the Plot
-  const svg = select('#interact')
+  const chart = select('#interact')
     .append('svg')
-    .attr('height', height)
-    .attr('width', width)
+    .attr('class', 'chart')
+    .attr('height', height + 20)
+    .attr('width', width + 20)
     .append('g')
+    .attr('class', 'chartContainer')
     .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
-  const axisContainerX = svg
+  const axisContainerX = chart
     .append('g')
     .attr('class', 'axisContainerX')
     .attr('transform', `translate(${margin.left}, ${plotHeight})`);
-  const axisContainerY = svg
+  const axisContainerY = chart
     .append('g')
     .attr('class', 'axisContainerY')
     .attr('transform', `translate(${margin.left}, 0)`);
 
-  const plotContainer = svg
+  const plotContainer = chart
     .append('g')
     .attr('class', 'plotContainer')
     .attr('transform', `translate(${margin.left}, 0)`);
+
+  const legend = select('#interact')
+    .append('svg')
+    .attr('class', 'legend')
+    .attr('height', height + 20)
+    .attr('width', plotWidth / 4)
+    .append('g')
+    .attr('class', 'legendContainer')
+    .attr('transform', `translate(0, ${height / 3.5})`);
 
   // NESTED LINES (Make this a separate function with the arguments = the dataset and the colorscale)
   const lineContainer = plotContainer
@@ -154,5 +165,34 @@ function myVis(data) {
   axisContainerX.call(axisBottom(xScale).tickFormat(format('0')));
   axisContainerY.call(axisLeft(yScale).tickFormat(format('.2s')));
 
+  createLegend(cat, srcColors, legend);
+  labelChart(cat);
+
   // render_lines(dataset, colorscale, column)
+}
+
+function createLegend(dataset, colorScale, legend) {
+  const legVars = Object.keys(dataset);
+  const legRects = legend.append('g').attr('class', 'legRects');
+  const legText = legend.append('g').attr('class', 'legText');
+  legRects
+    .selectAll('rect')
+    .data(legVars)
+    .join('rect')
+    .attr('height', '10px')
+    .attr('width', '10px')
+    .attr('fill', (d) => colorScale(d))
+    .attr('transform', (_, idx) => `translate(0, ${idx * 15})`);
+
+  legText
+    .selectAll('text')
+    .data(legVars)
+    .join('text')
+    .text((d) => d)
+    .attr('class', 'label')
+    .attr('transform', (_, idx) => `translate(18, ${idx * 15 + 9})`);
+}
+
+function labelChart(dataset) {
+  console.log('hi');
 }

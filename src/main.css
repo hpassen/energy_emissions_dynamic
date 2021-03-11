@@ -21,7 +21,7 @@ p {
   /* padding-top: 20px; */
   padding-bottom: 20px;
 }
-
+ 
 #header {
   display: flex;
   flex-direction: row;
@@ -46,7 +46,7 @@ p {
 #interact {
   display: flex;
   flex-direction: row;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   /* width: 100%; */
   margin-right: 15%;
@@ -71,6 +71,10 @@ p {
 .tight {
   padding-top: none;
   padding-bottom: none;
+}
+
+.label {
+  font-size: 8pt;
 }
 
 svg {
