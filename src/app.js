@@ -25,14 +25,14 @@ import './main.css';
 
 Promise.all(
   [
-    'https://hpassen.github.io/energy_emissions_dynamic/data/emissions.json', //a
+    // 'https://hpassen.github.io/energy_emissions_dynamic/data/emissions.json', //a
     'https://hpassen.github.io/energy_emissions_dynamic/data/renewables.json', //b
     'https://hpassen.github.io/energy_emissions_dynamic/data/source.json',
   ].map((url) => fetch(url).then((x) => x.json())),
 )
   .then((results) => {
-    const [emissions, renewables, source] = results;
-    myVis([emissions, renewables, source]);
+    const [renewables, source] = results;
+    myVis([renewables, source]);
   })
   .catch((e) => {
     console.log(e);
@@ -50,7 +50,7 @@ const plotWidth = width - margin.left - margin.right - 10;
 
 // Plotting Function
 function myVis(data) {
-  const [emissions, renewables, source] = data;
+  const [renewables, source] = data;
   console.log(plotHeight, plotWidth);
   console.log(data);
 
