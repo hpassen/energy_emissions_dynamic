@@ -171,8 +171,6 @@ def load_clean_eng(filename):
 
     eng_df["src"] = eng_df["src"].str.replace("Hydroelectric Conventional", 
                                               "Hydroelectric", regex=True)
-    # eng_df["src"] = eng_df["src"].str.replace("Wood and Wood Derived Fuels", 
-    #                                           "Wood Derived Fuels", regex=True)
     eng_df["src"] = eng_df["src"].str.replace("Wood and Wood Derived Fuels", 
                                               "Other", regex=True)
     eng_df["src"] = eng_df["src"].str.replace("Pumped Storage", 
@@ -229,15 +227,9 @@ def build_full():
     '''
     eng_df = build_eng()
     pop = build_pop()
-    # pol = load_clean_pol()
 
-    #Merge 3 data sets together
-    # data = pop.merge(pol, how="left", on=["state", "code", "year"])
+    #Merge data sets together
     pop["year"] = pop["year"].astype(int)
-
-    # for state in data["code"].unique():
-    #     state_filter = data["code"] == state
-    #     data.loc[state_filter, "pol"] = data.loc[state_filter, "pol"].fillna(method="ffill")
 
     data = pop.merge(eng_df, how="right", on=["year", "code"])
 
@@ -245,30 +237,9 @@ def build_full():
     data["co2_pp"] = data["co2_tons"] / data["pop"]
     data["mwh_pp"] = data["gen_mwh"] / data["pop"]
 
-    #Calculate % share of energy generation by source
-    # sum_mwh = data.groupby(["year", "code"])[["gen_mwh", "mwh_pp"]].sum().reset_index()
-    # sum_mwh.rename(columns={"gen_mwh": "sum_gen_mwh",
-    #                         "mwh_pp": "sum_mwh_pp"}, inplace=True)
-
-    # data = data.merge(sum_mwh, how="left", on=["year", "code"])
-    # data["mwh_pp_pct"] = data["mwh_pp"] / data["sum_mwh_pp"]
-    # data["gen_mwh_pct"] = data["gen_mwh"] / data["sum_gen_mwh"]
-
-    #Create a "dirtiness ranking" for each source based on how much emissions 
-    #it creates per mwh
-    # mwh_co2 = data.groupby(["src"])[["gen_mwh", "co2_tons"]].sum()
-    # mwh_co2 = mwh_co2.reset_index()
-    # mwh_co2["co2_mwh"] = mwh_co2["co2_tons"] / mwh_co2["gen_mwh"]
-    # mwh_co2.sort_values("co2_mwh", ascending=False, inplace=True)
-    # mwh_co2.reset_index(drop=True, inplace=True)
-    # mwh_co2["rank"] = mwh_co2.index + 1
-
-    # data = data.merge(mwh_co2[["src", "rank"]], how="left", on="src")
     data["year"] = data["year"].astype(int)
 
     return data
-
-    # return data.to_json('./data.json', orient="records")
 
 
 def prep_for_js():

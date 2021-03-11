@@ -25,9 +25,9 @@ import './main.css';
 
 Promise.all(
   [
-    'data/emissions.json', //a
-    '/data/renewables.json', //b
-    'https://hpassen.github.io/energy_emissions_dynamic/data/source.json',
+    './data/emissions.json', //a
+    './data/renewables.json', //b
+    './data/source.json',
   ].map((url) => fetch(url).then((x) => x.json())),
 )
   .then((results) => {
@@ -222,7 +222,7 @@ function myVis(data) {
     .attr('width', plotWidth / 4)
     .append('g')
     .attr('class', 'legendContainer')
-    .attr('transform', `translate(0, ${height / 3.5})`);
+    .attr('transform', `translate(15, ${height / 3.5})`);
 
   const legRects = legend.append('g').attr('class', 'legRects');
   const legText = legend.append('g').attr('class', 'legText');
