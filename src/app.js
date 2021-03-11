@@ -42,6 +42,12 @@ Promise.all(
 const xCol = 'year';
 const yCol = 'gen_mwh';
 const geog_start = 'United States';
+const measure_dd = ['Total', 'Per Capita'];
+const dataset_dd = [
+  'Energy Generation by Source',
+  'Energy Generation by Renewable',
+  'CO2 Emissions',
+];
 
 // Set up Plot Constants
 const width = 600;
@@ -53,6 +59,7 @@ const plotWidth = width - margin.left - margin.right;
 // Plotting Function
 function myVis(data) {
   const [emissions, renewables, source] = data;
+  //CREATE A CONSTANT OF ALL THE STATES FOR THE STATE DROPDOWN
   console.log(plotHeight, plotWidth);
   console.log(data);
 
