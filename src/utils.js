@@ -11,7 +11,7 @@ export function get_cats(dataset, key) {
   }, {});
 }
 
-export function get_color(d) {
-  const key = d[0]['src'];
+export function get_color(d, col) {
+  const key = d[0][col];
   return key;
 }

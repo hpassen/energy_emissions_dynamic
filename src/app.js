@@ -48,48 +48,49 @@ const margin = {top: 30, bottom: 30, right: 80, left: 20};
 const plotHeight = height - margin.top - margin.bottom;
 const plotWidth = width - margin.left - margin.right;
 
-// Colors
-const srcColors = scaleOrdinal()
-  .domain([
-    'Coal',
-    'Hydroelectric',
-    'Natural Gas',
-    'Petroleum',
-    'Wind',
-    'Wood Derived Fuels',
-    'Nuclear',
-    'Other Biomass',
-    'Other Gases',
-    'Pumped Storage',
-    'Geothermal',
-    'Other',
-    'Solar',
-  ])
-  .range([
-    '#9f9f9f',
-    '#6a85da',
-    '#c7bd74',
-    '#a27c4f',
-    '#67c2c8',
-    '#e5e5e5',
-    '#c89aba',
-    '#e5e5e5',
-    '#e5e5e5',
-    '#e5e5e5',
-    '#de6f6f',
-    '#e5e5e5',
-    '#ff8b42',
-  ]);
-const renewColors = scaleOrdinal()
-  .domain(['Renewable', 'Nonrenewable'])
-  .range(['#81d06e', '#8c8276']);
-// const emitColors = scaleOrdinal().range(['#525951']);
-
 // Plotting Function
 function myVis(data) {
   const [emissions, renewables, source] = data;
   console.log(plotHeight, plotWidth);
   console.log(data);
+
+  // Colors
+  const srcColors = scaleOrdinal()
+    .domain([
+      'Coal',
+      'Hydroelectric',
+      'Natural Gas',
+      'Petroleum',
+      'Wind',
+      'Wood Derived Fuels',
+      'Nuclear',
+      'Other Biomass',
+      'Other Gases',
+      'Pumped Storage',
+      'Geothermal',
+      'Other',
+      'Solar',
+    ])
+    .range([
+      '#9f9f9f',
+      '#6a85da',
+      '#c7bd74',
+      '#a27c4f',
+      '#67c2c8',
+      '#e5e5e5',
+      '#c89aba',
+      '#e5e5e5',
+      '#e5e5e5',
+      '#e5e5e5',
+      '#de6f6f',
+      '#e5e5e5',
+      '#ff8b42',
+    ]);
+  const renewColors = scaleOrdinal()
+    .domain(['Renewable', 'Nonrenewable'])
+    .range(['#81d06e', '#8c8276']);
+  // const emitColors = scaleOrdinal().range(['#525951']);
+
   // DEFAULTS:
   var yCol = 'gen_mwh';
   var geog = 'United States';
@@ -117,38 +118,6 @@ function myVis(data) {
   // UNIQUES FROM THIS SOURCE https://codeburst.io/javascript-array-distinct-5edc93501dc4
   const geogs_vars = [...new Set(emissions.map((row) => row['state']))];
 
-  // trying the dropdowns
-  const dataset_dd = select('#ux')
-    .append('div')
-    .style('display', 'flex')
-    .style('flex-direction', 'row')
-    .selectAll('.drop-down')
-    .data(['Dataset'])
-    .join('div');
-
-  dataset_dd.append('div').text((d) => d);
-
-  dataset_dd
-    .append('select')
-    .on('change', (event) => {
-      [dataset, filterVal, colorScale] = datasets[event.target.value];
-      // dataset = event.target.value[0];
-
-      console.log('in the dataset dd', dataset);
-      console.log('in the dataset dd', filterVal);
-      console.log('in the dataset dd', colorScale);
-      renderLines(yCol, dataset, filterVal, colorScale, geog);
-    })
-    .selectAll('option')
-    .data((dim) => datasets_vars.map((dataset) => ({dataset, dim})))
-    .join('option')
-    .text((d) => d.dataset)
-    .property(
-      'selected',
-      (d) => d.dataset === dataset,
-      // d.dim === 'Data' ? d.dataset === dataset : d.dataset === dataset,
-    );
-
   // Measurement Dropdown
   const measures_dd = select('#ux')
     .append('div')
@@ -172,6 +141,29 @@ function myVis(data) {
     .join('option')
     .text((d) => d.measurement)
     .property('selected', (d) => d.measurement === yCol);
+
+  // Dataset Dropdown
+  const dataset_dd = select('#ux')
+    .append('div')
+    .style('display', 'flex')
+    .style('flex-direction', 'row')
+    .selectAll('.drop-down')
+    .data(['Energy'])
+    .join('div');
+
+  dataset_dd.append('div').text((d) => d);
+
+  dataset_dd
+    .append('select')
+    .on('change', (event) => {
+      [dataset, filterVal, colorScale] = datasets[event.target.value];
+      renderLines(yCol, dataset, filterVal, colorScale, geog);
+    })
+    .selectAll('option')
+    .data((dim) => datasets_vars.map((dataset) => ({dataset, dim})))
+    .join('option')
+    .text((d) => d.dataset)
+    .property('selected', (d) => d.dataset === dataset);
 
   // Geography Dropdown
   const geog_dd = select('#ux')
@@ -265,10 +257,8 @@ function myVis(data) {
       .selectAll('path')
       .data(Object.values(cat))
       .join('path')
-      .attr('d', (d, i) => {
-        return lineScale(d);
-      })
-      .attr('stroke', (d) => colorScale(get_color(d)))
+      .attr('d', (d) => lineScale(d))
+      .attr('stroke', (d) => colorScale(get_color(d, filterVal)))
       .attr('fill', 'none');
 
     // Generate the Vis in SVG

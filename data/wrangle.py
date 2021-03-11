@@ -171,12 +171,20 @@ def load_clean_eng(filename):
 
     eng_df["src"] = eng_df["src"].str.replace("Hydroelectric Conventional", 
                                               "Hydroelectric", regex=True)
+    # eng_df["src"] = eng_df["src"].str.replace("Wood and Wood Derived Fuels", 
+    #                                           "Wood Derived Fuels", regex=True)
     eng_df["src"] = eng_df["src"].str.replace("Wood and Wood Derived Fuels", 
-                                              "Wood Derived Fuels", regex=True)
+                                              "Other", regex=True)
+    eng_df["src"] = eng_df["src"].str.replace("Pumped Storage", 
+                                              "Other", regex=True)
+    eng_df["src"] = eng_df["src"].str.replace("Other Biomass", 
+                                              "Other", regex=True)                   
+    eng_df["src"] = eng_df["src"].str.replace("Other Gases", 
+                                              "Other", regex=True)
     eng_df["src"] = eng_df["src"].str.replace("Solar Thermal and Photovoltaic", 
                                               "Solar", regex=True)
     eng_df["state"] = eng_df["state"].str.upper()
-
+    
     return eng_df
 
 
