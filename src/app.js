@@ -12,6 +12,7 @@ import {extent} from 'd3-array';
 import {line} from 'd3-shape';
 import {axisLeft, axisBottom, tickFormat} from 'd3-axis';
 import {format} from 'd3-format';
+import {transition} from 'd3-transition'
 // this command imports the css file, if you remove it your css wont be applied!
 import './main.css';
 
@@ -25,9 +26,9 @@ import './main.css';
 
 Promise.all(
   [
-    '../data/emissions.json',
-    '../data/renewables.json',
-    '../data/source.json',
+    './data/emissions.json',
+    './data/renewables.json',
+    './data/source.json',
   ].map((url) => fetch(url).then((x) => x.json())),
 )
   .then((results) => {
@@ -42,12 +43,6 @@ Promise.all(
 const xCol = 'year';
 const yCol = 'gen_mwh';
 const geog_start = 'United States';
-const measure_dd = ['Total', 'Per Capita'];
-const dataset_dd = [
-  'Energy Generation by Source',
-  'Energy Generation by Renewable',
-  'CO2 Emissions',
-];
 
 // Set up Plot Constants
 const width = 600;
@@ -59,6 +54,19 @@ const plotWidth = width - margin.left - margin.right;
 // Plotting Function
 function myVis(data) {
   const [emissions, renewables, source] = data;
+
+  const measure_dd = {
+    Total: ['gen_mwh', 'co2_tons'],
+    'Per Capita': ['mwh_pp, co2_pp'],
+  };
+  const dataset_dd = {
+    'Energy Generation by Source': source,
+    'Energy Generation by Renewable': renewables,
+    'CO2 Emissions': emissions,
+  };
+
+  const geogs = 
+
   //CREATE A CONSTANT OF ALL THE STATES FOR THE STATE DROPDOWN
   console.log(plotHeight, plotWidth);
   console.log(data);
