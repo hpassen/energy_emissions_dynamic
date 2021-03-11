@@ -1,5 +1,4 @@
 // if the data you are going to import is small, then you can import it using es6 import
-// (I like to use use screaming snake case for imported json)
 // import MY_DATA from './app/data/example.json'
 
 import {filter_geog, get_color} from './utils';
@@ -12,7 +11,7 @@ import {extent} from 'd3-array';
 import {line} from 'd3-shape';
 import {axisLeft, axisBottom, tickFormat} from 'd3-axis';
 import {format} from 'd3-format';
-import {transition} from 'd3-transition'
+import {transition} from 'd3-transition';
 // this command imports the css file, if you remove it your css wont be applied!
 import './main.css';
 
@@ -26,9 +25,9 @@ import './main.css';
 
 Promise.all(
   [
-    './data/emissions.json',
-    './data/renewables.json',
-    './data/source.json',
+    'data/emissions.json', //a
+    '/data/renewables.json', //b
+    'https://hpassen.github.io/energy_emissions_dynamic/data/source.json',
   ].map((url) => fetch(url).then((x) => x.json())),
 )
   .then((results) => {
@@ -41,8 +40,6 @@ Promise.all(
 
 // Data Constants
 const xCol = 'year';
-const yCol = 'gen_mwh';
-const geog_start = 'United States';
 
 // Set up Plot Constants
 const width = 600;
@@ -54,50 +51,109 @@ const plotWidth = width - margin.left - margin.right;
 // Plotting Function
 function myVis(data) {
   const [emissions, renewables, source] = data;
-
-  const measure_dd = {
-    Total: ['gen_mwh', 'co2_tons'],
-    'Per Capita': ['mwh_pp, co2_pp'],
-  };
-  const dataset_dd = {
-    'Energy Generation by Source': source,
-    'Energy Generation by Renewable': renewables,
-    'CO2 Emissions': emissions,
-  };
-
-  const geogs = 
-
-  //CREATE A CONSTANT OF ALL THE STATES FOR THE STATE DROPDOWN
   console.log(plotHeight, plotWidth);
   console.log(data);
+  // DEFAULTS:
+  var yCol = 'gen_mwh';
+  var geog = 'United States';
+  var dataset = source;
+  var gen = true;
+
+  //CREATE A CONSTANT OF ALL THE STATES FOR THE STATE DROPDOWN
+  const dd_inputs = {
+    blah: 'blah',
+    // UNCLEAR IF I NEED THIS? Would be nice to abstract it all eventually to a single function that takes in this thing, and can access all the other attributes (datasets, columns, colorscales)
+  };
+
+  const measures = {
+    Total: 'gen_mwh',
+    'Per Capita': 'mwh_pp',
+  };
+  const measures_vars = Object.keys(measures);
+  const datasets = {
+    'Energy Generation by Source': source,
+    'Energy Generation by Renewables': renewables,
+    'CO2 Emissions': emissions,
+  };
+  const datasets_vars = Object.keys(datasets);
+  // UNIQUES FROM THIS SOURCE https://codeburst.io/javascript-array-distinct-5edc93501dc4
+  const geogs_vars = [...new Set(emissions.map((row) => row['state']))];
 
   // trying the dropdowns
+  // const dataset_dd = select('#ux')
+  //   .append('div')
+  //   .style('display', 'flex')
+  //   .style('flex-direction', 'row')
+  //   .selectAll('.drop-down')
+  //   .data(['Data'])
+  //   .join('div');
+
+  // dataset_dd.append('div').text((d) => d);
+
+  // dataset_dd
+  //   .append('select')
+  //   .on('change', (event) => {
+  //     dataset = datasets[event.target.value];
+  //     console.log(dataset);
+  //     renderLines(yCol, dataset, geog);
+  //   })
+  //   .selectAll('option')
+  //   .data((dim) => datasets_vars.map((dataset) => ({dataset, dim})))
+  //   .join('option')
+  //   .text((d) => d.dataset)
+  //   .property('selected', (d) =>
+  //     d.dim === 'Data' ? d.dataset === dataset : d.dataset === dataset,
+  //   );
+
+  // Geography Dropdown
   const geog_dd = select('#ux')
     .append('div')
     .style('display', 'flex')
     .style('flex-direction', 'row')
     .selectAll('.drop-down')
-    .data(['United States'])
+    .data(['Geography'])
     .join('div');
 
   geog_dd.append('div').text((d) => d);
 
-  // THESE CONSTANTS WILL NEED TO BE DYNAMIC TO THE DROPDOWNS
-  const tx = filter_geog(source, 'Texas');
-  const cat = get_cats(tx, 'src');
-  console.log(cat);
+  geog_dd
+    .append('select')
+    .on('change', (event) => {
+      geog = event.target.value;
+      console.log('In the geog_dd, the geog is', geog);
+      renderLines(yCol, geog);
+    })
+    .selectAll('option')
+    .data((dim) => geogs_vars.map((state) => ({state, dim})))
+    .join('option')
+    .text((d) => d['state'])
+    .property('selected', (d) =>
+      d.dim === 'Geography' ? d['state'] === geog : d['state'] === geog,
+    );
 
-  // Domains and Scales WILL ALSO NEED TO BE DYNAMIC TO DROPDOWNS
-  const xDomain = extent(tx, (d) => d[xCol]);
-  const yDomain = extent(tx, (d) => d[yCol]);
-  console.log(xDomain, yDomain);
+  // Measurement Dropdown
+  const measures_dd = select('#ux')
+    .append('div')
+    .style('display', 'flex')
+    .style('flex-direction', 'row')
+    .selectAll('.drop-down')
+    .data(['Measurement'])
+    .join('div');
 
-  const xScale = scaleLinear().domain(xDomain).range([0, plotWidth]);
-  const yScale = scaleLinear().domain([0, yDomain[1]]).range([plotHeight, 0]);
+  measures_dd.append('div').text((d) => d);
 
-  const lineScale = line()
-    .x((d) => xScale(d[xCol]))
-    .y((d) => yScale(d[yCol]));
+  measures_dd
+    .append('select')
+    .on('change', (event) => {
+      var measure = event.target.value;
+      yCol = measures[measure];
+      renderLines(yCol, geog);
+    })
+    .selectAll('option')
+    .data((dim) => measures_vars.map((measurement) => ({measurement, dim})))
+    .join('option')
+    .text((d) => d.measurement)
+    .property('selected', (d) => d.measurement === yCol);
 
   // Colors
   const srcColors = scaleOrdinal()
@@ -169,39 +225,59 @@ function myVis(data) {
     .attr('class', 'legendContainer')
     .attr('transform', `translate(0, ${height / 3.5})`);
 
-  // NESTED LINES (Make this a separate function with the arguments = the dataset and the colorscale)
-  const lineContainer = plotContainer
-    .selectAll('g.lineContainer')
-    .data(Object.values(cat))
-    .join('g')
-    .attr('class', (d, idx) => Object.keys(cat)[idx]);
-
-  lineContainer
-    .selectAll('.line')
-    .data((d) => [d])
-    .join('path')
-    .attr('d', (d) => lineScale(d))
-    .attr('stroke', (d) => srcColors(get_color(d)))
-    // .attr('stroke', (d) => {
-    //   const key = d[0]['src'];
-    //   return srcColors(key);
-    // })
-    .attr('fill', 'none');
-
-  // Generate the Vis in SVG
-  axisContainerX.call(axisBottom(xScale).tickFormat(format('0')));
-  axisContainerY.call(axisLeft(yScale).tickFormat(format('.2s')));
-
-  createLegend(cat, srcColors, legend);
-  labelChart(cat);
-
-  // render_lines(dataset, colorscale, column)
-}
-
-function createLegend(dataset, colorScale, legend) {
-  const legVars = Object.keys(dataset);
   const legRects = legend.append('g').attr('class', 'legRects');
   const legText = legend.append('g').attr('class', 'legText');
+
+  // NESTED LINES (Make this a separate function with the arguments = the dataset and the colorscale)
+  // THESE CONSTANTS WILL NEED TO BE DYNAMIC TO THE DROPDOWNS
+  function renderLines(variable, place) {
+    // console.log(dataset);
+    console.log('In the render, the place is', place);
+    console.log('in the render, the var is', variable);
+
+    const loc = filter_geog(source, place);
+    console.log('in the render, I did get filtered data', loc);
+
+    const cat = get_cats(loc, 'src');
+
+    // Domains and Scales WILL ALSO NEED TO BE DYNAMIC TO DROPDOWNS
+    const xDomain = extent(loc, (d) => d[xCol]);
+    const yDomain = extent(loc, (d) => d[variable]);
+    console.log(xDomain, yDomain);
+
+    const xScale = scaleLinear().domain(xDomain).range([0, plotWidth]);
+    const yScale = scaleLinear().domain([0, yDomain[1]]).range([plotHeight, 0]);
+
+    const lineScale = line()
+      .x((d) => xScale(d[xCol]))
+      .y((d) => yScale(d[variable]));
+
+    const lineContainer = plotContainer
+      .selectAll('path')
+      .data(Object.values(cat))
+      .join('path')
+      .attr('d', (d, i) => {
+        return lineScale(d);
+      })
+      .attr('stroke', (d) => srcColors(get_color(d)))
+      .attr('fill', 'none');
+
+    // Generate the Vis in SVG
+    axisContainerX.call(axisBottom(xScale).tickFormat(format('0')));
+    axisContainerY.call(axisLeft(yScale).tickFormat(format('.2s')));
+
+    // LEGENDS AND LABELS WILL HAVE TO BE DYNAMIC AS WELL
+    createLegend(cat, srcColors, legend);
+    labelChart(cat);
+  }
+  renderLines(yCol, geog);
+}
+
+const legConfigs = {};
+function createLegend(dataset, colorScale, legend) {
+  const legVars = Object.keys(dataset);
+  const legRects = legend.select('.legRects');
+  const legText = legend.select('.legText');
   legRects
     .selectAll('rect')
     .data(legVars)
