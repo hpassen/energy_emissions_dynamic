@@ -25,9 +25,9 @@ import './main.css';
 
 Promise.all(
   [
-    '/data/emissions.json', //a
-    'data/renewables.json', //b
-    './data/source.json',
+    'https://hpassen.github.io/energy_emissions_dynamic/data/emissions.json', //a
+    'https://hpassen.github.io/energy_emissions_dynamic/data/renewables.json', //b
+    'https://hpassen.github.io/energy_emissions_dynamic/data/source.json',
   ].map((url) => fetch(url).then((x) => x.json())),
 )
   .then((results) => {
@@ -223,13 +223,12 @@ function myVis(data) {
     .append('g')
     .attr('class', 'legendContainer')
     .attr('transform', `translate(15, ${height / 3.5})`);
-
   const legRects = legend.append('g').attr('class', 'legRects');
   const legText = legend.append('g').attr('class', 'legText');
 
-  // NESTED LINES (Make this a separate function with the arguments = the dataset and the colorscale)
-  // THESE CONSTANTS WILL NEED TO BE DYNAMIC TO THE DROPDOWNS
   function renderLines(variable, dataset, filterVal, colorScale, place) {
+    const t = transition().duration();
+
     console.log('hi from the render');
     const loc = filter_geog(dataset, place);
     const cat = get_cats(loc, filterVal);
@@ -249,9 +248,22 @@ function myVis(data) {
     const lineContainer = plotContainer
       .selectAll('path')
       .data(Object.values(cat))
-      .join('path')
-      .attr('d', (d) => lineScale(d))
-      .attr('stroke', (d) => colorScale(get_color(d, filterVal)))
+
+      .join(
+        (enter) =>
+          enter
+            .append('path')
+            .attr('d', (d) => lineScale(d))
+            .attr('stroke', (d) => colorScale(get_color(d, filterVal))),
+
+        (update) =>
+          update.call((el) =>
+            el
+              .transition(t)
+              .attr('d', (d) => lineScale(d))
+              .attr('stroke', (d) => colorScale(get_color(d, filterVal))),
+          ),
+      )
       .attr('stroke-width', 1.5)
       .attr('fill', 'none');
 
@@ -291,25 +303,51 @@ function myVis(data) {
 }
 
 function createLegend(dataset, colorScale, legend) {
+  const t = transition().duration();
   const legVars = Object.keys(dataset);
   const legRects = legend.select('.legRects');
   const legText = legend.select('.legText');
   legRects
     .selectAll('rect')
     .data(legVars)
-    .join('rect')
-    .attr('height', '10px')
-    .attr('width', '10px')
-    .attr('fill', (d) => colorScale(d))
-    .attr('transform', (_, idx) => `translate(0, ${idx * 15})`);
+    .join(
+      (enter) =>
+        enter
+          .append('rect')
+          .attr('height', '10px')
+          .attr('width', '10px')
+          .attr('fill', (d) => colorScale(d))
+          .attr('transform', (_, idx) => `translate(0, ${idx * 15})`),
+      (update) =>
+        update.call((el) =>
+          el
+            .transition(t)
+            .attr('height', '10px')
+            .attr('width', '10px')
+            .attr('fill', (d) => colorScale(d))
+            .attr('transform', (_, idx) => `translate(0, ${idx * 15})`),
+        ),
+    );
 
   legText
     .selectAll('text')
     .data(legVars)
-    .join('text')
-    .text((d) => d)
-    .attr('class', 'label')
-    .attr('transform', (_, idx) => `translate(18, ${idx * 15 + 9})`);
+    .join(
+      (enter) =>
+        enter
+          .append('text')
+          .text((d) => d)
+          .attr('class', 'label')
+          .attr('transform', (_, idx) => `translate(18, ${idx * 15 + 9})`),
+      (update) =>
+        update.call((el) =>
+          el
+            .transition(t)
+            .text((d) => d)
+            .attr('class', 'label')
+            .attr('transform', (_, idx) => `translate(18, ${idx * 15 + 9})`),
+        ),
+    );
 }
 
 function labelChart(yVar, titleText) {
