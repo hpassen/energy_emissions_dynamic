@@ -25,8 +25,8 @@ import './main.css';
 
 Promise.all(
   [
-    './data/emissions.json', //a
-    './data/renewables.json', //b
+    '/data/emissions.json', //a
+    'data/renewables.json', //b
     './data/source.json',
   ].map((url) => fetch(url).then((x) => x.json())),
 )
@@ -46,7 +46,7 @@ const width = 600;
 const height = (24 / 36) * width;
 const margin = {top: 30, bottom: 30, right: 80, left: 20};
 const plotHeight = height - margin.top - margin.bottom;
-const plotWidth = width - margin.left - margin.right;
+const plotWidth = width - margin.left - margin.right - 10;
 
 // Plotting Function
 function myVis(data) {
@@ -230,15 +230,8 @@ function myVis(data) {
   // NESTED LINES (Make this a separate function with the arguments = the dataset and the colorscale)
   // THESE CONSTANTS WILL NEED TO BE DYNAMIC TO THE DROPDOWNS
   function renderLines(variable, dataset, filterVal, colorScale, place) {
-    // console.log(dataset);
-    console.log('In the render, the dataset is', dataset);
-    console.log('In the render, the filterVal is', filterVal);
-    console.log('In the render, the place is', place);
-    console.log('in the render, the var is', variable);
-
+    console.log('hi from the render');
     const loc = filter_geog(dataset, place);
-    console.log('in the render, I did get filtered data', loc);
-
     const cat = get_cats(loc, filterVal);
 
     // Domains and Scales WILL ALSO NEED TO BE DYNAMIC TO DROPDOWNS
@@ -259,20 +252,44 @@ function myVis(data) {
       .join('path')
       .attr('d', (d) => lineScale(d))
       .attr('stroke', (d) => colorScale(get_color(d, filterVal)))
+      .attr('stroke-width', 1.5)
       .attr('fill', 'none');
 
     // Generate the Vis in SVG
-    axisContainerX.call(axisBottom(xScale).tickFormat(format('0')));
-    axisContainerY.call(axisLeft(yScale).tickFormat(format('.2s')));
+    axisContainerX
+      .append('g')
+      .attr('class', 'axisLab')
+      .attr('transform', `translate(${plotWidth / 2}, 10)`)
+      .append('text')
+      .attr('text-anchor', 'middle')
+      .text('Year');
 
-    // LEGENDS AND LABELS WILL HAVE TO BE DYNAMIC AS WELL
+    axisContainerX.call(
+      axisBottom(xScale)
+        .tickValues([1990, 2000, 2010, 2019])
+        .tickFormat(format('0')),
+    );
+
+    axisContainerY
+      .append('g')
+      .attr('class', 'axisLab')
+      .attr('transform', `translate(0, ${plotHeight / 2})`)
+      .append('text')
+      .attr('text-anchor', 'middle')
+      .attr('transform', 'rotate(-90)')
+      .text('Energy Generation (MWH)');
+
+    axisContainerY.call(
+      axisLeft(yScale).ticks(5).tickSizeOuter(0).tickFormat(format('.2s')),
+    );
+
+    // Build the Axes and Legends
     createLegend(cat, colorScale, legend);
     labelChart(cat);
   }
   renderLines(yCol, dataset, filterVal, colorScale, geog);
 }
 
-const legConfigs = {};
 function createLegend(dataset, colorScale, legend) {
   const legVars = Object.keys(dataset);
   const legRects = legend.select('.legRects');
@@ -295,6 +312,6 @@ function createLegend(dataset, colorScale, legend) {
     .attr('transform', (_, idx) => `translate(18, ${idx * 15 + 9})`);
 }
 
-function labelChart(dataset) {
+function labelChart(yVar, titleText) {
   console.log('hi');
 }
