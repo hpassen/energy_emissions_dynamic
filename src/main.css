@@ -57,7 +57,7 @@ p {
 #ux {
   display: flex;
   flex-direction: row;
-  justify-content: space-around;
+  justify-content: center;
   align-items: center;
   width: 100%;
   /* margin-right: 15%;
@@ -68,12 +68,18 @@ p {
 #dynamic {
   display: flex;
   flex-direction: row;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
   width: 100%;
   /* margin-right: 15%;
   margin-left: 15%; */
   /* border: thin solid red */
+}
+
+.dropdown {
+  font-size: '10pt';
+  padding-left: 40px;
+  padding-right: 40px;
 }
 
 .bump_bottom {
@@ -97,10 +103,6 @@ p {
 
 .label {
   font-size: 8pt;
-}
-
-.axisLab {
-  border: thin solid blue
 }
 
 svg {

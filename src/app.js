@@ -15,19 +15,12 @@ import {transition} from 'd3-transition';
 // this command imports the css file, if you remove it your css wont be applied!
 import './main.css';
 
-// THIS LOADS THE WHOLE LARGE DATASET - DONT USE THIS
-// fetch('../data/data.json')
-//   .then((response) => response.json())
-//   .then((data) => myVis(data))
-//   .catch((e) => {
-//     console.log(e);
-//   });
-
 Promise.all(
   [
-    // 'https://hpassen.github.io/energy_emissions_dynamic/data/emissions.json', //a
-    'https://hpassen.github.io/energy_emissions_dynamic/data/renewables.json', //b
-    'https://hpassen.github.io/energy_emissions_dynamic/data/source.json',
+    './data/renewables.json',
+    './data/source.json',
+    // 'https://hpassen.github.io/energy_emissions_dynamic/data/renewables.json',
+    // 'https://hpassen.github.io/energy_emissions_dynamic/data/source.json',
   ].map((url) => fetch(url).then((x) => x.json())),
 )
   .then((results) => {
@@ -44,7 +37,7 @@ const xCol = 'year';
 // Set up Plot Constants
 const width = 600;
 const height = (24 / 36) * width;
-const margin = {top: 30, bottom: 30, right: 80, left: 20};
+const margin = {top: 60, bottom: 60, right: 30, left: 100};
 const plotHeight = height - margin.top - margin.bottom;
 const plotWidth = width - margin.left - margin.right - 10;
 
@@ -98,12 +91,7 @@ function myVis(data) {
   var filterVal = 'src';
   var colorScale = srcColors;
 
-  //CREATE A CONSTANT OF ALL THE STATES FOR THE STATE DROPDOWN
-  const dd_inputs = {
-    blah: 'blah',
-    // UNCLEAR IF I NEED THIS? Would be nice to abstract it all eventually to a single function that takes in this thing, and can access all the other attributes (datasets, columns, colorscales)
-  };
-
+  //Constants for Dropdowns
   const measures = {
     Total: 'gen_mwh',
     'Per Capita': 'mwh_pp',
@@ -112,15 +100,15 @@ function myVis(data) {
   const datasets = {
     'Energy Generation by Source': [source, 'src', srcColors],
     'Energy Generation by Renewables': [renewables, 'renew', renewColors],
-    // 'CO2 Emissions': emissions,
   };
   const datasets_vars = Object.keys(datasets);
   // UNIQUES FROM THIS SOURCE https://codeburst.io/javascript-array-distinct-5edc93501dc4
-  const geogs_vars = [...new Set(emissions.map((row) => row['state']))];
+  const geogs_vars = [...new Set(renewables.map((row) => row['state']))];
 
   // Measurement Dropdown
   const measures_dd = select('#ux')
     .append('div')
+    .attr('class', 'dropdown')
     .style('display', 'flex')
     .style('flex-direction', 'row')
     .selectAll('.drop-down')
@@ -145,6 +133,7 @@ function myVis(data) {
   // Dataset Dropdown
   const dataset_dd = select('#ux')
     .append('div')
+    .attr('class', 'dropdown')
     .style('display', 'flex')
     .style('flex-direction', 'row')
     .selectAll('.drop-down')
@@ -168,6 +157,7 @@ function myVis(data) {
   // Geography Dropdown
   const geog_dd = select('#ux')
     .append('div')
+    .attr('class', 'dropdown')
     .style('display', 'flex')
     .style('flex-direction', 'row')
     .selectAll('.drop-down')
@@ -195,20 +185,43 @@ function myVis(data) {
   const chart = select('#dynamic')
     .append('svg')
     .attr('class', 'chart')
-    .attr('height', height + 20)
-    .attr('width', width + 20)
+    .attr('height', height)
+    .attr('width', width)
     .append('g')
     .attr('class', 'chartContainer')
-    .attr('transform', `translate(${margin.left}, ${margin.top})`);
+    .attr('transform', `translate(0, ${margin.top})`);
 
   const axisContainerX = chart
     .append('g')
     .attr('class', 'axisContainerX')
     .attr('transform', `translate(${margin.left}, ${plotHeight})`);
+
+  const axisLabelX = chart
+    .append('g')
+    .attr('class', 'axisLab')
+    .attr(
+      'transform',
+      `translate(${plotWidth / 2 + margin.left}, ${
+        plotHeight + margin.bottom / 2
+      })`,
+    )
+    .append('text')
+    .attr('text-anchor', 'middle')
+    .text('Year');
+
   const axisContainerY = chart
     .append('g')
     .attr('class', 'axisContainerY')
     .attr('transform', `translate(${margin.left}, 0)`);
+
+  const axisLabelY = chart
+    .append('g')
+    .attr('class', 'axisLab')
+    .attr('transform', `translate(${margin.left / 2}, ${plotHeight / 2})`)
+    .append('text')
+    .attr('text-anchor', 'middle')
+    .attr('transform', 'rotate(-90)')
+    .text('Energy Generation (MWH)');
 
   const plotContainer = chart
     .append('g')
@@ -218,14 +231,17 @@ function myVis(data) {
   const legend = select('#dynamic')
     .append('svg')
     .attr('class', 'legend')
-    .attr('height', height + 20)
+    .attr('height', height)
     .attr('width', plotWidth / 4)
     .append('g')
     .attr('class', 'legendContainer')
-    .attr('transform', `translate(15, ${height / 3.5})`);
+    .attr('transform', `translate(0, ${height / 3.5})`);
   const legRects = legend.append('g').attr('class', 'legRects');
   const legText = legend.append('g').attr('class', 'legText');
 
+  //
+  // RENDERING FUNCTION
+  //
   function renderLines(variable, dataset, filterVal, colorScale, place) {
     const t = transition().duration();
 
@@ -233,7 +249,7 @@ function myVis(data) {
     const loc = filter_geog(dataset, place);
     const cat = get_cats(loc, filterVal);
 
-    // Domains and Scales WILL ALSO NEED TO BE DYNAMIC TO DROPDOWNS
+    // Domains and Scales
     const xDomain = extent(loc, (d) => d[xCol]);
     const yDomain = extent(loc, (d) => d[variable]);
     console.log(xDomain, yDomain);
@@ -268,28 +284,12 @@ function myVis(data) {
       .attr('fill', 'none');
 
     // Generate the Vis in SVG
-    axisContainerX
-      .append('g')
-      .attr('class', 'axisLab')
-      .attr('transform', `translate(${plotWidth / 2}, 10)`)
-      .append('text')
-      .attr('text-anchor', 'middle')
-      .text('Year');
 
     axisContainerX.call(
       axisBottom(xScale)
         .tickValues([1990, 2000, 2010, 2019])
         .tickFormat(format('0')),
     );
-
-    axisContainerY
-      .append('g')
-      .attr('class', 'axisLab')
-      .attr('transform', `translate(0, ${plotHeight / 2})`)
-      .append('text')
-      .attr('text-anchor', 'middle')
-      .attr('transform', 'rotate(-90)')
-      .text('Energy Generation (MWH)');
 
     axisContainerY.call(
       axisLeft(yScale).ticks(5).tickSizeOuter(0).tickFormat(format('.2s')),
@@ -307,6 +307,7 @@ function createLegend(dataset, colorScale, legend) {
   const legVars = Object.keys(dataset);
   const legRects = legend.select('.legRects');
   const legText = legend.select('.legText');
+
   legRects
     .selectAll('rect')
     .data(legVars)
