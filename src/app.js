@@ -3,18 +3,21 @@
 
 import {filter_geog, get_color} from './utils';
 import {get_cats} from './utils';
+import 'intersection-observer';
+import scrollama from 'scrollama';
 import {json} from 'd3-fetch';
-import {select} from 'd3-selection';
-import {nest} from 'd3-collection';
-import {scaleLinear, scaleOrdinal, scaleTime} from 'd3-scale';
+import {select, selectAll} from 'd3-selection';
+import {scaleLinear, scaleOrdinal} from 'd3-scale';
 import {extent} from 'd3-array';
 import {line} from 'd3-shape';
 import {axisLeft, axisBottom, tickFormat} from 'd3-axis';
 import {format} from 'd3-format';
 import {transition} from 'd3-transition';
-// this command imports the css file, if you remove it your css wont be applied!
 import './main.css';
 
+//
+//
+//GET THE DATA AND RUN THE PAGE
 Promise.all(
   [
     './data/renewables.json',
@@ -25,7 +28,9 @@ Promise.all(
 )
   .then((results) => {
     const [renewables, source] = results;
-    myVis([renewables, source]);
+    myData = {renew: renewables, src: source};
+    scroll(scrollConfig);
+    myVis(results, '#dynamic');
   })
   .catch((e) => {
     console.log(e);
@@ -33,56 +38,151 @@ Promise.all(
 
 // Data Constants
 const xCol = 'year';
+// Colors
+const srcColors = scaleOrdinal()
+  .domain([
+    'Coal',
+    'Hydroelectric',
+    'Natural Gas',
+    'Petroleum',
+    'Wind',
+    'Wood Derived Fuels',
+    'Nuclear',
+    'Other Biomass',
+    'Other Gases',
+    'Pumped Storage',
+    'Geothermal',
+    'Other',
+    'Solar',
+  ])
+  .range([
+    '#9f9f9f',
+    '#6a85da',
+    '#c7bd74',
+    '#a27c4f',
+    '#67c2c8',
+    '#e5e5e5',
+    '#c89aba',
+    '#e5e5e5',
+    '#e5e5e5',
+    '#e5e5e5',
+    '#de6f6f',
+    '#e5e5e5',
+    '#ff8b42',
+  ]);
+const renewColors = scaleOrdinal()
+  .domain(['Renewable', 'Nonrenewable'])
+  .range(['#81d06e', '#8c8276']);
 
-// Set up Plot Constants
+// Set up Scrolly Constants
+var scrolly = select('#scrolly');
+var figure = scrolly.select('figure');
+var article = scrolly.select('article');
+var step = article.selectAll('.step');
+var myData = {};
+
+const scrollConfig = {
+  2: ['Coal'],
+  3: ['Petroleum'],
+  4: ['Natural Gas'],
+  5: ['Nuclear', 'Geothermal', 'Hydroelectric'],
+  6: ['Wind'],
+  7: ['Solar'],
+  8: ['Renewable'],
+  9: ['Nonrenewable'],
+};
+
+// Set up Interactive Constants
 const width = 600;
 const height = (24 / 36) * width;
 const margin = {top: 60, bottom: 60, right: 30, left: 100};
 const plotHeight = height - margin.top - margin.bottom;
-const plotWidth = width - margin.left - margin.right - 10;
+const plotWidth = width - margin.left - margin.right;
 
-// Plotting Function
-function myVis(data) {
+// initialize the scrollama
+var scroller = scrollama();
+
+// generic window resize listener event
+function handleResize() {
+  // 1. update height of step elements
+  var stepH = Math.floor(window.innerHeight * 0.75);
+  step.style('height', stepH + 'px');
+
+  var figureHeight = window.innerHeight / 2;
+  var figureMarginTop = (window.innerHeight - figureHeight) / 2;
+
+  figure
+    .style('height', figureHeight + 'px')
+    .style('top', figureMarginTop + 'px');
+
+  // 3. tell scrollama to update new element dimensions
+  scroller.resize();
+}
+
+// scrollama event handlers
+function handleStepEnter(response) {
+  console.log(response);
+  // response = { element, direction, index }
+
+  // add color to current step only
+  step.classed('is-active', function (d, i) {
+    return i === response.index;
+  });
+
+  // update graphic based on step
+  if (response.index < 2) {
+    var dataset = myData.src;
+    // figure.select('p').text('barchart ' + (response.index + 1));
+    var pieces = buildContainers('#scrollfig');
+    console.log('got some pieces', pieces);
+  } else if (1 < response.index && response.index < 8) {
+    var dataset = myData.src;
+
+    figure.select('p').text('linessrc' + (response.index - 1));
+  } else {
+    var dataset = myData.renew;
+    figure.select('p').text('linesrenew' + (response.index - 7));
+  }
+}
+
+function setupStickyfill() {
+  selectAll('.sticky').each(function () {
+    Stickyfill.add(this);
+  });
+}
+
+function scroll(scrollConfig) {
+  console.log('Hi from scroll');
+  setupStickyfill();
+
+  // 1. force a resize on load to ensure proper dimensions are sent to scrollama
+  handleResize();
+
+  // 2. setup the scroller passing options
+  // 		this will also initialize trigger observations
+  // 3. bind scrollama event handlers (this can be chained like below)
+  scroller
+    .setup({
+      step: '#scrolly article .step',
+      offset: 0.5,
+      debug: true,
+    })
+    .onStepEnter(handleStepEnter);
+
+  // setup resize event
+  window.addEventListener('resize', handleResize);
+}
+
+// kick things off
+scroll(scrollConfig);
+
+//
+//
+// Interactive Function
+function myVis(data, id) {
   const [renewables, source] = data;
   console.log(plotHeight, plotWidth);
   console.log(data);
-
-  // Colors
-  const srcColors = scaleOrdinal()
-    .domain([
-      'Coal',
-      'Hydroelectric',
-      'Natural Gas',
-      'Petroleum',
-      'Wind',
-      'Wood Derived Fuels',
-      'Nuclear',
-      'Other Biomass',
-      'Other Gases',
-      'Pumped Storage',
-      'Geothermal',
-      'Other',
-      'Solar',
-    ])
-    .range([
-      '#9f9f9f',
-      '#6a85da',
-      '#c7bd74',
-      '#a27c4f',
-      '#67c2c8',
-      '#e5e5e5',
-      '#c89aba',
-      '#e5e5e5',
-      '#e5e5e5',
-      '#e5e5e5',
-      '#de6f6f',
-      '#e5e5e5',
-      '#ff8b42',
-    ]);
-  const renewColors = scaleOrdinal()
-    .domain(['Renewable', 'Nonrenewable'])
-    .range(['#81d06e', '#8c8276']);
-  // const emitColors = scaleOrdinal().range(['#525951']);
 
   // DEFAULTS:
   var yCol = 'gen_mwh';
@@ -122,7 +222,7 @@ function myVis(data) {
     .on('change', (event) => {
       var measure = event.target.value;
       yCol = measures[measure];
-      renderLines(yCol, dataset, filterVal, colorScale, geog);
+      renderLines(yCol, dataset, filterVal, colorScale, geog, pieces);
     })
     .selectAll('option')
     .data((dim) => measures_vars.map((measurement) => ({measurement, dim})))
@@ -146,7 +246,7 @@ function myVis(data) {
     .append('select')
     .on('change', (event) => {
       [dataset, filterVal, colorScale] = datasets[event.target.value];
-      renderLines(yCol, dataset, filterVal, colorScale, geog);
+      renderLines(yCol, dataset, filterVal, colorScale, geog, pieces);
     })
     .selectAll('option')
     .data((dim) => datasets_vars.map((dataset) => ({dataset, dim})))
@@ -171,7 +271,7 @@ function myVis(data) {
     .on('change', (event) => {
       geog = event.target.value;
       console.log('In the geog_dd, the geog is', geog);
-      renderLines(yCol, dataset, filterVal, colorScale, geog);
+      renderLines(yCol, dataset, filterVal, colorScale, geog, pieces);
     })
     .selectAll('option')
     .data((dim) => geogs_vars.map((state) => ({state, dim})))
@@ -182,7 +282,13 @@ function myVis(data) {
     );
 
   // Containers for the Plot
-  const chart = select('#dynamic')
+  const pieces = buildContainers(id);
+  // Lines Inside the Containers
+  renderLines(yCol, dataset, filterVal, colorScale, geog, pieces);
+}
+
+function buildContainers(id) {
+  const chart = select(id)
     .append('svg')
     .attr('class', 'chart')
     .attr('height', height)
@@ -228,7 +334,7 @@ function myVis(data) {
     .attr('class', 'plotContainer')
     .attr('transform', `translate(${margin.left}, 0)`);
 
-  const legend = select('#dynamic')
+  const legend = select(id)
     .append('svg')
     .attr('class', 'legend')
     .attr('height', height)
@@ -239,67 +345,63 @@ function myVis(data) {
   const legRects = legend.append('g').attr('class', 'legRects');
   const legText = legend.append('g').attr('class', 'legText');
 
-  //
-  // RENDERING FUNCTION
-  //
-  function renderLines(variable, dataset, filterVal, colorScale, place) {
-    const t = transition().duration();
+  const pieces = [axisContainerX, axisContainerY, plotContainer, legend];
+  return pieces;
+}
 
-    console.log('hi from the render');
-    const loc = filter_geog(dataset, place);
-    const cat = get_cats(loc, filterVal);
+function renderLines(variable, dataset, filterVal, colorScale, place, pieces) {
+  const [axisContainerX, axisContainerY, plotContainer, legend] = pieces;
+  const t = transition().duration();
 
-    // Domains and Scales
-    const xDomain = extent(loc, (d) => d[xCol]);
-    const yDomain = extent(loc, (d) => d[variable]);
-    console.log(xDomain, yDomain);
+  console.log('hi from the render');
+  const loc = filter_geog(dataset, place);
+  const cat = get_cats(loc, filterVal);
 
-    const xScale = scaleLinear().domain(xDomain).range([0, plotWidth]);
-    const yScale = scaleLinear().domain([0, yDomain[1]]).range([plotHeight, 0]);
+  // Domains and Scales
+  const xDomain = extent(loc, (d) => d[xCol]);
+  const yDomain = extent(loc, (d) => d[variable]);
+  console.log(xDomain, yDomain);
 
-    const lineScale = line()
-      .x((d) => xScale(d[xCol]))
-      .y((d) => yScale(d[variable]));
+  const xScale = scaleLinear().domain(xDomain).range([0, plotWidth]);
+  const yScale = scaleLinear().domain([0, yDomain[1]]).range([plotHeight, 0]);
 
-    const lineContainer = plotContainer
-      .selectAll('path')
-      .data(Object.values(cat))
+  const lineScale = line()
+    .x((d) => xScale(d[xCol]))
+    .y((d) => yScale(d[variable]));
 
-      .join(
-        (enter) =>
-          enter
-            .append('path')
+  // Build the Plot
+  const lineContainer = plotContainer
+    .selectAll('path')
+    .data(Object.values(cat))
+
+    .join(
+      (enter) =>
+        enter
+          .append('path')
+          .attr('d', (d) => lineScale(d))
+          .attr('stroke', (d) => colorScale(get_color(d, filterVal))),
+
+      (update) =>
+        update.call((el) =>
+          el
+            .transition(t)
             .attr('d', (d) => lineScale(d))
             .attr('stroke', (d) => colorScale(get_color(d, filterVal))),
+        ),
+    )
+    .attr('stroke-width', 2)
+    .attr('fill', 'none');
 
-        (update) =>
-          update.call((el) =>
-            el
-              .transition(t)
-              .attr('d', (d) => lineScale(d))
-              .attr('stroke', (d) => colorScale(get_color(d, filterVal))),
-          ),
-      )
-      .attr('stroke-width', 2)
-      .attr('fill', 'none');
-
-    // Generate the Vis in SVG
-
-    axisContainerX.call(
-      axisBottom(xScale)
-        .tickValues([1990, 2000, 2010, 2019])
-        .tickFormat(format('0')),
-    );
-
-    axisContainerY.call(
-      axisLeft(yScale).ticks(5).tickSizeOuter(0).tickFormat(format('.2s')),
-    );
-
-    // Build the Axes and Legends
-    createLegend(cat, colorScale, legend);
-    labelChart(cat);
-  }
-  renderLines(yCol, dataset, filterVal, colorScale, geog);
+  // Build the Axes and Legend
+  axisContainerX.call(
+    axisBottom(xScale)
+      .tickValues([1990, 2000, 2010, 2019])
+      .tickFormat(format('0')),
+  );
+  axisContainerY.call(
+    axisLeft(yScale).ticks(5).tickSizeOuter(0).tickFormat(format('.2s')),
+  );
+  createLegend(cat, colorScale, legend);
 }
 
 function createLegend(dataset, colorScale, legend) {
@@ -329,7 +431,6 @@ function createLegend(dataset, colorScale, legend) {
             .attr('transform', (_, idx) => `translate(0, ${idx * 18})`),
         ),
     );
-
   legText
     .selectAll('text')
     .data(legVars)
@@ -349,8 +450,4 @@ function createLegend(dataset, colorScale, legend) {
             .attr('transform', (_, idx) => `translate(18, ${idx * 18 + 12})`),
         ),
     );
-}
-
-function labelChart(yVar, titleText) {
-  console.log('hi');
 }
