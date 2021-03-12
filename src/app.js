@@ -202,7 +202,7 @@ function myVis(data) {
     .attr(
       'transform',
       `translate(${plotWidth / 2 + margin.left}, ${
-        plotHeight + margin.bottom / 2
+        plotHeight + margin.bottom * 0.6
       })`,
     )
     .append('text')
@@ -280,7 +280,7 @@ function myVis(data) {
               .attr('stroke', (d) => colorScale(get_color(d, filterVal))),
           ),
       )
-      .attr('stroke-width', 1.5)
+      .attr('stroke-width', 2)
       .attr('fill', 'none');
 
     // Generate the Vis in SVG
@@ -315,18 +315,18 @@ function createLegend(dataset, colorScale, legend) {
       (enter) =>
         enter
           .append('rect')
-          .attr('height', '10px')
-          .attr('width', '10px')
+          .attr('height', '12px')
+          .attr('width', '12px')
           .attr('fill', (d) => colorScale(d))
-          .attr('transform', (_, idx) => `translate(0, ${idx * 15})`),
+          .attr('transform', (_, idx) => `translate(0, ${idx * 18})`),
       (update) =>
         update.call((el) =>
           el
             .transition(t)
-            .attr('height', '10px')
-            .attr('width', '10px')
+            .attr('height', '12px')
+            .attr('width', '12px')
             .attr('fill', (d) => colorScale(d))
-            .attr('transform', (_, idx) => `translate(0, ${idx * 15})`),
+            .attr('transform', (_, idx) => `translate(0, ${idx * 18})`),
         ),
     );
 
@@ -339,14 +339,14 @@ function createLegend(dataset, colorScale, legend) {
           .append('text')
           .text((d) => d)
           .attr('class', 'label')
-          .attr('transform', (_, idx) => `translate(18, ${idx * 15 + 9})`),
+          .attr('transform', (_, idx) => `translate(18, ${idx * 18 + 12})`),
       (update) =>
         update.call((el) =>
           el
             .transition(t)
             .text((d) => d)
             .attr('class', 'label')
-            .attr('transform', (_, idx) => `translate(18, ${idx * 15 + 9})`),
+            .attr('transform', (_, idx) => `translate(18, ${idx * 18 + 12})`),
         ),
     );
 }

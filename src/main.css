@@ -21,6 +21,10 @@ p {
   /* padding-top: 20px; */
   padding-bottom: 20px;
 }
+
+/* text {
+  font-size: 9pt;
+} */
  
 #header {
   display: flex;
@@ -102,7 +106,7 @@ p {
 }
 
 .label {
-  font-size: 8pt;
+  font-size: 10pt;
 }
 
 svg {
