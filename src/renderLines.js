@@ -9,7 +9,7 @@ import {axisLeft, axisBottom, tickFormat} from 'd3-axis';
 import {format} from 'd3-format';
 import {transition} from 'd3-transition';
 
-export function renderLines(
+export default function renderLines(
   variable,
   dataset,
   filterVal,

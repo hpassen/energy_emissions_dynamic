@@ -9,7 +9,7 @@ import {axisLeft, axisBottom, tickFormat} from 'd3-axis';
 import {format} from 'd3-format';
 import {transition} from 'd3-transition';
 
-export function buildContainers(id) {
+export default function buildContainers(id) {
   const chart = select(id)
     .append('svg')
     .attr('class', 'chart')
