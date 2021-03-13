@@ -3,6 +3,8 @@
 
 import {filter_geog, get_color} from './utils';
 import {get_cats} from './utils';
+import {renderLines} from './renderLines';
+import {buildContainers} from './buildContainer';
 import 'intersection-observer';
 import scrollama from 'scrollama';
 import {json} from 'd3-fetch';
@@ -52,13 +54,14 @@ const renewColors = scaleOrdinal()
   .range(['#81d06e', '#8c8276']);
 
 // Set up Scrolly Constants
+var id = '#scrollfig';
 var scrolly = select('#scrolly');
 var figure = scrolly.select('figure');
+var chart = scrolly.select('#chart');
 var article = scrolly.select('article');
 var step = article.selectAll('.step');
 var myData = {};
 var defaults = {};
-var pieces = [];
 // Data Constants
 const xCol = 'year';
 const scrollConfig = {
@@ -72,7 +75,7 @@ const scrollConfig = {
   9: ['Nonrenewable'],
 };
 
-// Set up Interactive Constants
+// Set up Chart Sizing Constants
 const width = 600;
 const height = (24 / 36) * width;
 const margin = {top: 60, bottom: 60, right: 30, left: 100};
@@ -98,6 +101,7 @@ function handleResize() {
     .style('height', figureHeight + 'px')
     .style('top', figureMarginTop + 'px');
 
+  chart.style('height', height + 'px').style('width', width + 'px');
   // 3. tell scrollama to update new element dimensions
   scroller.resize();
 }
@@ -117,14 +121,13 @@ function handleStepEnter(response) {
     figure.select('p').text('barchart ' + (response.index + 1));
   } else if (response.index === 2) {
     console.log('the defaults are', defaults);
-    console.log('got some pieces', pieces);
     renderLines(
       defaults.yCol,
       defaults.dataset,
       defaults.filterVal,
       defaults.colorScale,
       defaults.geog,
-      pieces,
+      id,
     );
   } else if (1 < response.index && response.index < 8) {
     figure.select('p').text('linessrc' + (response.index - 1));
@@ -153,7 +156,7 @@ function scroll(scrollConfig) {
   scroller
     .setup({
       step: '#scrolly article .step',
-      offset: 0.5,
+      offset: 0.65,
       debug: true,
     })
     .onStepEnter(handleStepEnter);
@@ -189,12 +192,11 @@ Promise.all(
     };
 
     //Build the Axes/Chart Body
-    pieces = buildContainers('#scrollfig');
-    console.log(('in the promise, the defaults are', defaults));
+    buildContainers('#scrollfig');
 
     // Generate the scroll and the interactive dropdowns
     scroll();
-    myVis(results, '#dynamic', defaults);
+    uxDynamic(results, '#dynamic', defaults);
   })
   .catch((e) => {
     console.log(e);
@@ -203,11 +205,12 @@ Promise.all(
 //
 //
 // Interactive Function
-function myVis(data, id, defaults) {
+function uxDynamic(data, id, defaults) {
   const [renewables, source] = data;
   console.log(plotHeight, plotWidth);
   console.log(data);
   console.log('in myViz the defaults are', defaults);
+  console.log('in myVis the id is', id);
 
   // DEFAULTS:
   var yCol = defaults.yCol;
@@ -248,7 +251,7 @@ function myVis(data, id, defaults) {
     .on('change', (event) => {
       var measure = event.target.value;
       yCol = measures[measure];
-      renderLines(yCol, dataset, filterVal, colorScale, geog, pieces);
+      renderLines(yCol, dataset, filterVal, colorScale, geog, id);
     })
     .selectAll('option')
     .data((dim) => measures_vars.map((measurement) => ({measurement, dim})))
@@ -272,7 +275,7 @@ function myVis(data, id, defaults) {
     .append('select')
     .on('change', (event) => {
       [dataset, filterVal, colorScale] = datasets[event.target.value];
-      renderLines(yCol, dataset, filterVal, colorScale, geog, pieces);
+      renderLines(yCol, dataset, filterVal, colorScale, geog, id);
     })
     .selectAll('option')
     .data((dim) => datasets_vars.map((dataset) => ({dataset, dim})))
@@ -297,7 +300,7 @@ function myVis(data, id, defaults) {
     .on('change', (event) => {
       geog = event.target.value;
       console.log('In the geog_dd, the geog is', geog);
-      renderLines(yCol, dataset, filterVal, colorScale, geog, pieces);
+      renderLines(yCol, dataset, filterVal, colorScale, geog, id);
     })
     .selectAll('option')
     .data((dim) => geogs_vars.map((state) => ({state, dim})))
@@ -308,175 +311,8 @@ function myVis(data, id, defaults) {
     );
 
   // Containers for the Plot
-  const pieces = buildContainers(id);
+  buildContainers(id);
   // Lines Inside the Containers
-  renderLines(yCol, dataset, filterVal, colorScale, geog, pieces);
-}
-
-function buildContainers(id) {
-  const chart = select(id)
-    .append('svg')
-    .attr('class', 'chart')
-    .attr('height', height)
-    .attr('width', width);
-  // .append('g')
-  // .attr('class', 'chartContainer')
-  // .attr('transform', `translate(0, ${margin.top})`);
-
-  const axisContainerX = chart
-    .append('g')
-    .attr('class', 'axisContainerX')
-    .attr('transform', `translate(${margin.left}, ${plotHeight + margin.top})`);
-
-  const axisLabelX = chart
-    .append('g')
-    .attr('class', 'axisLab')
-    .attr(
-      'transform',
-      `translate(${plotWidth / 2 + margin.left}, ${
-        plotHeight + margin.top + margin.bottom * 0.6
-      })`,
-    )
-    .append('text')
-    .attr('text-anchor', 'middle')
-    .text('Year');
-
-  const axisContainerY = chart
-    .append('g')
-    .attr('class', 'axisContainerY')
-    .attr('transform', `translate(${margin.left}, ${margin.top})`);
-
-  const axisLabelY = chart
-    .append('g')
-    .attr('class', 'axisLab')
-    .attr(
-      'transform',
-      `translate(${margin.left / 2}, ${plotHeight / 2 + margin.top})`,
-    )
-    .append('text')
-    .attr('text-anchor', 'middle')
-    .attr('transform', 'rotate(-90)')
-    .text('Energy Generation (MWH)');
-
-  const plotContainer = chart
-    .append('g')
-    .attr('class', 'plotContainer')
-    .attr('transform', `translate(${margin.left}, ${margin.top})`);
-
-  const legend = select(id)
-    .append('svg')
-    .attr('class', 'legend')
-    .attr('height', height)
-    .attr('width', plotWidth / 4)
-    .append('g')
-    .attr('class', 'legendContainer')
-    .attr('transform', `translate(0, ${height / 3.5})`);
-  const legRects = legend.append('g').attr('class', 'legRects');
-  const legText = legend.append('g').attr('class', 'legText');
-
-  const pieces = [axisContainerX, axisContainerY, plotContainer, legend];
-  return pieces;
-}
-
-function renderLines(variable, dataset, filterVal, colorScale, place, pieces) {
-  const [axisContainerX, axisContainerY, plotContainer, legend] = pieces;
-  const t = transition().duration();
-
-  console.log('hi from the render');
-  const loc = filter_geog(dataset, place);
-  const cat = get_cats(loc, filterVal);
-
-  // Domains and Scales
-  const xDomain = extent(loc, (d) => d[xCol]);
-  const yDomain = extent(loc, (d) => d[variable]);
-  console.log(xDomain, yDomain);
-
-  const xScale = scaleLinear().domain(xDomain).range([0, plotWidth]);
-  const yScale = scaleLinear().domain([0, yDomain[1]]).range([plotHeight, 0]);
-
-  const lineScale = line()
-    .x((d) => xScale(d[xCol]))
-    .y((d) => yScale(d[variable]));
-
-  // Build the Plot
-  const lineContainer = plotContainer
-    .selectAll('path')
-    .data(Object.values(cat))
-
-    .join(
-      (enter) =>
-        enter
-          .append('path')
-          .attr('d', (d) => lineScale(d))
-          .attr('stroke', (d) => colorScale(get_color(d, filterVal))),
-
-      (update) =>
-        update.call((el) =>
-          el
-            .transition(t)
-            .attr('d', (d) => lineScale(d))
-            .attr('stroke', (d) => colorScale(get_color(d, filterVal))),
-        ),
-    )
-    .attr('stroke-width', 2)
-    .attr('fill', 'none');
-
-  // Build the Axes and Legend
-  axisContainerX.call(
-    axisBottom(xScale)
-      .tickValues([1990, 2000, 2010, 2019])
-      .tickFormat(format('0')),
-  );
-  axisContainerY.call(
-    axisLeft(yScale).ticks(5).tickSizeOuter(0).tickFormat(format('.2s')),
-  );
-  createLegend(cat, colorScale, legend);
-}
-
-function createLegend(dataset, colorScale, legend) {
-  const t = transition().duration();
-  const legVars = Object.keys(dataset);
-  const legRects = legend.select('.legRects');
-  const legText = legend.select('.legText');
-
-  legRects
-    .selectAll('rect')
-    .data(legVars)
-    .join(
-      (enter) =>
-        enter
-          .append('rect')
-          .attr('height', '12px')
-          .attr('width', '12px')
-          .attr('fill', (d) => colorScale(d))
-          .attr('transform', (_, idx) => `translate(0, ${idx * 18})`),
-      (update) =>
-        update.call((el) =>
-          el
-            .transition(t)
-            .attr('height', '12px')
-            .attr('width', '12px')
-            .attr('fill', (d) => colorScale(d))
-            .attr('transform', (_, idx) => `translate(0, ${idx * 18})`),
-        ),
-    );
-  legText
-    .selectAll('text')
-    .data(legVars)
-    .join(
-      (enter) =>
-        enter
-          .append('text')
-          .text((d) => d)
-          .attr('class', 'label')
-          .attr('transform', (_, idx) => `translate(18, ${idx * 18 + 12})`),
-      (update) =>
-        update.call((el) =>
-          el
-            .transition(t)
-            .text((d) => d)
-            .attr('class', 'label')
-            .attr('transform', (_, idx) => `translate(18, ${idx * 18 + 12})`),
-        ),
-    );
+  console.log('but the id is here, right?', id);
+  renderLines(yCol, dataset, filterVal, colorScale, geog, id);
 }

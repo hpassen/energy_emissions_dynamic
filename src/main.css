@@ -172,7 +172,7 @@ figure {
   margin-bottom: 0;
 }
 
-.step.is-active {
+.step.is-active p{
   /* background-color: goldenrod; */
   color: #3b3b3b;
 }
@@ -181,6 +181,7 @@ figure {
   text-align: center;
   padding: 1rem;
   font-size: 12pt;
+  color: lightgray
 }
 
 #outro {
