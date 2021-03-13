@@ -15,3 +15,12 @@ export function get_color(d, col) {
   const key = d[0][col];
   return key;
 }
+
+export function barFilter(dataset, barCat, barVar, rowCol, rowVal) {
+  return dataset.reduce((acc, row) => {
+    if (row[rowCol] === rowVal) {
+      acc[row[barCat]] = row[barVar];
+    }
+    return acc;
+  }, {});
+}

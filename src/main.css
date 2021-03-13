@@ -163,6 +163,9 @@ figure {
 }
 
 .step {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
   margin: 0 auto 2rem auto;
   /* background-color: #3b3b3b; */
   color: #fff;
@@ -191,4 +194,14 @@ figure {
 
 svg {
   /* border: thin solid red */
+}
+
+
+/* DELETE THESE LATER */
+#smalllines{
+  display: flex;
+  flex-direction: row;
+  margin-right: 15%;
+  margin-left: 15%;
+  padding-bottom: 200px;
 }

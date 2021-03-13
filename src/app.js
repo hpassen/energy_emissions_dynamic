@@ -1,13 +1,13 @@
 // if the data you are going to import is small, then you can import it using es6 import
 // import MY_DATA from './app/data/example.json'
 
-import {filter_geog, get_color} from './utils';
+import {filter_geog, get_color, barFilter} from './utils';
 import {get_cats} from './utils';
 import 'intersection-observer';
 import scrollama from 'scrollama';
 import {json} from 'd3-fetch';
 import {select, selectAll} from 'd3-selection';
-import {scaleLinear, scaleOrdinal} from 'd3-scale';
+import {scaleLinear, scaleBand, scaleOrdinal} from 'd3-scale';
 import {extent} from 'd3-array';
 import {line} from 'd3-shape';
 import {axisLeft, axisBottom, tickFormat} from 'd3-axis';
@@ -62,7 +62,10 @@ var myData = {};
 var defaults = {};
 // Data Constants
 const xCol = 'year';
+const xLab = 'Year';
 const scrollConfig = {
+  0: 1990,
+  1: 2019,
   2: ['Coal'],
   3: ['Petroleum'],
   4: ['Natural Gas'],
@@ -117,17 +120,17 @@ function handleStepEnter(response) {
 
   // update graphic based on step
   if (response.index < 2) {
-    figure.select('p').text('barchart ' + (response.index + 1));
+    renderBar(defaults.dataset, id, scrollConfig[response.index]);
   } else if (response.index === 2) {
-    console.log('the defaults are', defaults);
-    renderLines(
-      defaults.yCol,
-      defaults.dataset,
-      defaults.filterVal,
-      defaults.colorScale,
-      defaults.geog,
-      id,
-    );
+    // console.log('the defaults are', defaults);
+    // renderLines(
+    //   defaults.yCol,
+    //   defaults.dataset,
+    //   defaults.filterVal,
+    //   defaults.colorScale,
+    //   defaults.geog,
+    //   id,
+    // );
   } else if (1 < response.index && response.index < 8) {
     figure.select('p').text('linessrc' + (response.index - 1));
   } else {
@@ -182,24 +185,85 @@ Promise.all(
     //Name the constants
     const [renewables, source] = results;
     myData = {renew: renewables, src: source};
+    console.log('...in the promise...myData:', myData);
     defaults = {
       yCol: 'gen_mwh',
-      dataset: myData.src,
+      dataset: source,
       filterVal: 'src',
       colorScale: srcColors,
       geog: 'United States',
     };
+    console.log('in the promise...defaults:', defaults);
 
     //Build the Axes/Chart Body
-    buildContainers('#scrollfig');
+    buildContainers('#scrollfig', xLab);
 
     // Generate the scroll and the interactive dropdowns
     scroll();
+    buildContainers('#bar', xLab);
+    test(source, '#bar', 1990);
     uxDynamic(results, '#dynamic', defaults);
   })
   .catch((e) => {
     console.log(e);
   });
+
+function test(dataset, figID, year) {
+  renderBar(dataset, figID, year);
+}
+
+//
+//
+//Bar Chart
+function renderBar(dataset, id, year) {
+  console.log('...testing...data:', dataset);
+  console.log('...testing...id:', id);
+  // buildContainers(id, 'Source');
+
+  const loc = filter_geog(dataset, 'United States');
+  const cat = get_cats(loc, 'src');
+  console.log('...testing... loc:', loc);
+
+  const barData = barFilter(loc, 'src', 'gen_mwh', 'year', year);
+  const remapped = Object.entries(barData).map(([x, y]) => ({x, y}));
+  console.log('... the data for my bars is', barData);
+  console.log('...and remapped it is:', remapped);
+
+  // Make the Domains and Scales
+  const xDomain = Object.keys(barData);
+  const yDomain = extent(remapped, (d) => d.y);
+  console.log(xDomain, yDomain);
+
+  const xScale = scaleBand().domain(xDomain).range([0, plotWidth]);
+  const yScale = scaleLinear().domain([0, yDomain[1]]).range([0, plotHeight]);
+
+  var xLab = select(id).select('.axisLabelX');
+  var chart = select(id).select('.chart');
+  var legend = select(id).select('.legend');
+  var plotContainer = select(id).select('.plotContainer');
+
+  plotContainer
+    .selectAll('rect')
+    .data(remapped)
+    .join('rect')
+    .attr('class', (d) => d.x)
+    .attr('x', (d) => xScale(d.x) + 5)
+    .attr('y', (d) => plotHeight - yScale(d.y))
+    .attr('height', (d) => yScale(d.y))
+    .attr('width', xScale.bandwidth() - 10)
+    .attr('fill', (d) => srcColors(d.x));
+
+  chart.select('.axisContainerX').call(axisBottom(xScale));
+  chart.select('.axisContainerY').call(
+    axisLeft(yScale.range([plotHeight, 0]))
+      .ticks(5)
+      .tickSizeOuter(0)
+      .tickFormat(format('.2s')),
+  );
+
+  xLab.select('text').text('Source');
+  createLegend(barData, srcColors, legend);
+}
 
 //
 //
@@ -310,13 +374,13 @@ function uxDynamic(data, id, defaults) {
     );
 
   // Containers for the Plot
-  const pieces = buildContainers(id);
+  buildContainers(id, xLab);
   // Lines Inside the Containers
   console.log('but the id is here, right?', id);
   renderLines(yCol, dataset, filterVal, colorScale, geog, id);
 }
 
-function buildContainers(id) {
+function buildContainers(id, xLab) {
   const chart = select(id)
     .append('svg')
     .attr('class', 'chart')
@@ -333,7 +397,7 @@ function buildContainers(id) {
 
   const axisLabelX = chart
     .append('g')
-    .attr('class', 'axisLab')
+    .attr('class', 'axisLabelX')
     .attr(
       'transform',
       `translate(${plotWidth / 2 + margin.left}, ${
@@ -342,7 +406,7 @@ function buildContainers(id) {
     )
     .append('text')
     .attr('text-anchor', 'middle')
-    .text('Year');
+    .text(xLab);
 
   const axisContainerY = chart
     .append('g')
@@ -351,7 +415,7 @@ function buildContainers(id) {
 
   const axisLabelY = chart
     .append('g')
-    .attr('class', 'axisLab')
+    .attr('class', 'axisLabelY')
     .attr(
       'transform',
       `translate(${margin.left / 2}, ${plotHeight / 2 + margin.top})`,
