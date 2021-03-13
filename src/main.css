@@ -25,7 +25,7 @@ p {
 /* text {
   font-size: 9pt;
 } */
- 
+
 #header {
   display: flex;
   flex-direction: row;
@@ -112,6 +112,7 @@ p {
 #scrolly {
   position: relative;
   display: flex;
+  flex-direction: row;
   background-color: white;
   /* padding: 1rem; */
   margin-right: 15%;
@@ -132,8 +133,10 @@ article {
 
 figure {
   display: flex;
+  flex-direction: row;
   position: sticky;
   width: 800px;
+  height: 800px;
   margin: 0;
   -webkit-transform: translate3d(0, 0, 0);
   -moz-transform: translate3d(0, 0, 0);
@@ -144,6 +147,8 @@ figure {
 }
 
 #scrollfig {
+  display: flex;
+  flex-direction: row;
   text-align: center;
   padding: 1rem;
   position: absolute;
@@ -179,7 +184,7 @@ figure {
 }
 
 #outro {
-  padding-top: 60px;
+  padding-top: 4000px;
 }
 
 

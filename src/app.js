@@ -15,29 +15,6 @@ import {format} from 'd3-format';
 import {transition} from 'd3-transition';
 import './main.css';
 
-//
-//
-//GET THE DATA AND RUN THE PAGE
-Promise.all(
-  [
-    './data/renewables.json',
-    './data/source.json',
-    // 'https://hpassen.github.io/energy_emissions_dynamic/data/renewables.json',
-    // 'https://hpassen.github.io/energy_emissions_dynamic/data/source.json',
-  ].map((url) => fetch(url).then((x) => x.json())),
-)
-  .then((results) => {
-    const [renewables, source] = results;
-    myData = {renew: renewables, src: source};
-    scroll(scrollConfig);
-    myVis(results, '#dynamic');
-  })
-  .catch((e) => {
-    console.log(e);
-  });
-
-// Data Constants
-const xCol = 'year';
 // Colors
 const srcColors = scaleOrdinal()
   .domain([
@@ -80,7 +57,10 @@ var figure = scrolly.select('figure');
 var article = scrolly.select('article');
 var step = article.selectAll('.step');
 var myData = {};
-
+var defaults = {};
+var pieces = [];
+// Data Constants
+const xCol = 'year';
 const scrollConfig = {
   2: ['Coal'],
   3: ['Petroleum'],
@@ -99,6 +79,9 @@ const margin = {top: 60, bottom: 60, right: 30, left: 100};
 const plotHeight = height - margin.top - margin.bottom;
 const plotWidth = width - margin.left - margin.right;
 
+//
+//
+// THE SCROLLY SECTION
 // initialize the scrollama
 var scroller = scrollama();
 
@@ -131,13 +114,19 @@ function handleStepEnter(response) {
 
   // update graphic based on step
   if (response.index < 2) {
-    var dataset = myData.src;
-    // figure.select('p').text('barchart ' + (response.index + 1));
-    var pieces = buildContainers('#scrollfig');
+    figure.select('p').text('barchart ' + (response.index + 1));
+  } else if (response.index === 2) {
+    console.log('the defaults are', defaults);
     console.log('got some pieces', pieces);
+    renderLines(
+      defaults.yCol,
+      defaults.dataset,
+      defaults.filterVal,
+      defaults.colorScale,
+      defaults.geog,
+      pieces,
+    );
   } else if (1 < response.index && response.index < 8) {
-    var dataset = myData.src;
-
     figure.select('p').text('linessrc' + (response.index - 1));
   } else {
     var dataset = myData.renew;
@@ -174,22 +163,59 @@ function scroll(scrollConfig) {
 }
 
 // kick things off
-scroll(scrollConfig);
+scroll();
+
+//
+//
+//GET THE DATA AND RUN THE PAGE
+Promise.all(
+  [
+    './data/renewables.json',
+    './data/source.json',
+    // 'https://hpassen.github.io/energy_emissions_dynamic/data/renewables.json',
+    // 'https://hpassen.github.io/energy_emissions_dynamic/data/source.json',
+  ].map((url) => fetch(url).then((x) => x.json())),
+)
+  .then((results) => {
+    //Name the constants
+    const [renewables, source] = results;
+    myData = {renew: renewables, src: source};
+    defaults = {
+      yCol: 'gen_mwh',
+      dataset: myData.src,
+      filterVal: 'src',
+      colorScale: srcColors,
+      geog: 'United States',
+    };
+
+    //Build the Axes/Chart Body
+    pieces = buildContainers('#scrollfig');
+    console.log(('in the promise, the defaults are', defaults));
+
+    // Generate the scroll and the interactive dropdowns
+    scroll();
+    myVis(results, '#dynamic', defaults);
+  })
+  .catch((e) => {
+    console.log(e);
+  });
 
 //
 //
 // Interactive Function
-function myVis(data, id) {
+function myVis(data, id, defaults) {
   const [renewables, source] = data;
   console.log(plotHeight, plotWidth);
   console.log(data);
+  console.log('in myViz the defaults are', defaults);
 
   // DEFAULTS:
-  var yCol = 'gen_mwh';
-  var geog = 'United States';
-  var dataset = source;
-  var filterVal = 'src';
-  var colorScale = srcColors;
+  var yCol = defaults.yCol;
+  var geog = defaults.geog;
+  var dataset = defaults.dataset;
+  var filterVal = defaults.filterVal;
+  var colorScale = defaults.colorScale;
+  console.log(dataset);
 
   //Constants for Dropdowns
   const measures = {
@@ -292,15 +318,15 @@ function buildContainers(id) {
     .append('svg')
     .attr('class', 'chart')
     .attr('height', height)
-    .attr('width', width)
-    .append('g')
-    .attr('class', 'chartContainer')
-    .attr('transform', `translate(0, ${margin.top})`);
+    .attr('width', width);
+  // .append('g')
+  // .attr('class', 'chartContainer')
+  // .attr('transform', `translate(0, ${margin.top})`);
 
   const axisContainerX = chart
     .append('g')
     .attr('class', 'axisContainerX')
-    .attr('transform', `translate(${margin.left}, ${plotHeight})`);
+    .attr('transform', `translate(${margin.left}, ${plotHeight + margin.top})`);
 
   const axisLabelX = chart
     .append('g')
@@ -308,7 +334,7 @@ function buildContainers(id) {
     .attr(
       'transform',
       `translate(${plotWidth / 2 + margin.left}, ${
-        plotHeight + margin.bottom * 0.6
+        plotHeight + margin.top + margin.bottom * 0.6
       })`,
     )
     .append('text')
@@ -318,12 +344,15 @@ function buildContainers(id) {
   const axisContainerY = chart
     .append('g')
     .attr('class', 'axisContainerY')
-    .attr('transform', `translate(${margin.left}, 0)`);
+    .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
   const axisLabelY = chart
     .append('g')
     .attr('class', 'axisLab')
-    .attr('transform', `translate(${margin.left / 2}, ${plotHeight / 2})`)
+    .attr(
+      'transform',
+      `translate(${margin.left / 2}, ${plotHeight / 2 + margin.top})`,
+    )
     .append('text')
     .attr('text-anchor', 'middle')
     .attr('transform', 'rotate(-90)')
@@ -332,7 +361,7 @@ function buildContainers(id) {
   const plotContainer = chart
     .append('g')
     .attr('class', 'plotContainer')
-    .attr('transform', `translate(${margin.left}, 0)`);
+    .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
   const legend = select(id)
     .append('svg')
