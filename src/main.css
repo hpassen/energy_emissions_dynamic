@@ -188,7 +188,7 @@ figure {
 }
 
 #outro {
-  padding-top: 4000px;
+  padding-top: 200px;
 }
 
 
@@ -198,6 +198,14 @@ svg {
 
 
 /* DELETE THESE LATER */
+#bar{
+  display: flex;
+  flex-direction: row;
+  margin-right: 15%;
+  margin-left: 15%;
+  padding-bottom: 200px;
+}
+
 #smalllines{
   display: flex;
   flex-direction: row;

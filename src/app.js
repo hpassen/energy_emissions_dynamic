@@ -1,7 +1,7 @@
 // if the data you are going to import is small, then you can import it using es6 import
 // import MY_DATA from './app/data/example.json'
 
-import {filter_geog, get_color, barFilter} from './utils';
+import {filter_geog, get_color, barFilter, columnHas} from './utils';
 import {get_cats} from './utils';
 import 'intersection-observer';
 import scrollama from 'scrollama';
@@ -62,18 +62,43 @@ var myData = {};
 var defaults = {};
 // Data Constants
 const xCol = 'year';
-const xLab = 'Year';
+const xLabel = 'Year';
 const scrollConfig = {
   0: 1990,
   1: 2019,
   2: ['Coal'],
-  3: ['Petroleum'],
-  4: ['Natural Gas'],
-  5: ['Nuclear', 'Geothermal', 'Hydroelectric'],
-  6: ['Wind'],
-  7: ['Solar'],
-  8: ['Renewable'],
-  9: ['Nonrenewable'],
+  3: ['Coal', 'Petroleum'],
+  4: ['Coal', 'Petroleum', 'Natural Gas'],
+  5: ['Coal', 'Petroleum', 'Natural Gas', 'Geothermal', 'Hydroelectric'],
+  6: [
+    'Coal',
+    'Petroleum',
+    'Natural Gas',
+    'Geothermal',
+    'Hydroelectric',
+    'Nuclear',
+  ],
+  7: [
+    'Coal',
+    'Petroleum',
+    'Natural Gas',
+    'Geothermal',
+    'Hydroelectric',
+    'Nuclear',
+    'Wind',
+  ],
+  8: [
+    'Coal',
+    'Petroleum',
+    'Natural Gas',
+    'Geothermal',
+    'Hydroelectric',
+    'Nuclear',
+    'Wind',
+    'Solar',
+  ],
+  9: ['Renewable'],
+  10: ['Renewable', 'Nonrenewable'],
 };
 
 // Set up Chart Sizing Constants
@@ -121,21 +146,47 @@ function handleStepEnter(response) {
   // update graphic based on step
   if (response.index < 2) {
     renderBar(defaults.dataset, id, scrollConfig[response.index]);
-  } else if (response.index === 2) {
-    // console.log('the defaults are', defaults);
-    // renderLines(
-    //   defaults.yCol,
-    //   defaults.dataset,
-    //   defaults.filterVal,
-    //   defaults.colorScale,
-    //   defaults.geog,
-    //   id,
-    // );
-  } else if (1 < response.index && response.index < 8) {
-    figure.select('p').text('linessrc' + (response.index - 1));
+  } else if (1 < response.index && response.index < 9) {
+    var yCol = defaults.yCol;
+    var geog = defaults.geog;
+    var dataset = defaults.dataset;
+    var filterVal = defaults.filterVal;
+    var colorScale = defaults.colorScale;
+
+    const t = transition().duration(1000);
+    // const loc = filter_geog(dataset, 'United States');
+    console.log('...testing... loc:', dataset);
+
+    var filters = scrollConfig[response.index];
+    var lineData = columnHas(dataset, 'src', filters);
+    // console.log('...testing columnhas:', lineData);
+
+    renderLines(yCol, lineData, filterVal, colorScale, geog, id);
   } else {
+    var yCol = defaults.yCol;
+    var geog = defaults.geog;
+    var filterVal = 'renew';
+    var colorScale = renewColors;
     var dataset = myData.renew;
-    figure.select('p').text('linesrenew' + (response.index - 7));
+    console.log(
+      '...should be renewables',
+      yCol,
+      geog,
+      filterVal,
+      colorScale,
+      dataset,
+    );
+
+    const t = transition().duration(1000);
+    // const loc = filter_geog(dataset, 'United States');
+    console.log('...testing... loc:', dataset);
+
+    var filters = scrollConfig[response.index];
+    console.log('...testing filters:', filters);
+    var lineData = columnHas(dataset, 'renew', filters);
+    console.log('...testing columnhas:', lineData);
+
+    renderLines(yCol, lineData, filterVal, colorScale, geog, id);
   }
 }
 
@@ -196,19 +247,47 @@ Promise.all(
     console.log('in the promise...defaults:', defaults);
 
     //Build the Axes/Chart Body
-    buildContainers('#scrollfig', xLab);
+    buildContainers('#scrollfig', xLabel);
 
     // Generate the scroll and the interactive dropdowns
     scroll();
-    buildContainers('#bar', xLab);
-    test(source, '#bar', 1990);
+    // buildContainers('#bar', xLabel);
+    // testBar(source, '#bar', 1990);
+    buildContainers('#smalllines', xLabel);
+    testLines(source, '#smalllines');
     uxDynamic(results, '#dynamic', defaults);
   })
   .catch((e) => {
     console.log(e);
   });
 
-function test(dataset, figID, year) {
+//
+//
+//TESTING THE FILTERED LINES
+function testLines(dataset, id) {
+  console.log('...testing...data:', dataset);
+  console.log('...testing...id:', id);
+  // DEFAULTS
+  var yCol = defaults.yCol;
+  var geog = defaults.geog;
+  var filterVal = defaults.filterVal;
+  var colorScale = defaults.colorScale;
+
+  const t = transition().duration(800);
+  const loc = filter_geog(dataset, 'United States');
+  console.log('...testing... loc:', loc);
+
+  var filters = ['Coal', 'Wind'];
+  var lineData = columnHas(loc, 'src', filters);
+  console.log('...testing columnhas:', lineData);
+
+  renderLines(yCol, lineData, filterVal, colorScale, geog, id);
+}
+
+//
+//
+// TESTING THE BARS
+function testBar(dataset, figID, year) {
   renderBar(dataset, figID, year);
 }
 
@@ -216,13 +295,8 @@ function test(dataset, figID, year) {
 //
 //Bar Chart
 function renderBar(dataset, id, year) {
-  console.log('...testing...data:', dataset);
-  console.log('...testing...id:', id);
-  // buildContainers(id, 'Source');
-
+  const t = transition().duration(800);
   const loc = filter_geog(dataset, 'United States');
-  const cat = get_cats(loc, 'src');
-  console.log('...testing... loc:', loc);
 
   const barData = barFilter(loc, 'src', 'gen_mwh', 'year', year);
   const remapped = Object.entries(barData).map(([x, y]) => ({x, y}));
@@ -245,13 +319,28 @@ function renderBar(dataset, id, year) {
   plotContainer
     .selectAll('rect')
     .data(remapped)
-    .join('rect')
-    .attr('class', (d) => d.x)
-    .attr('x', (d) => xScale(d.x) + 5)
-    .attr('y', (d) => plotHeight - yScale(d.y))
-    .attr('height', (d) => yScale(d.y))
-    .attr('width', xScale.bandwidth() - 10)
-    .attr('fill', (d) => srcColors(d.x));
+    .join(
+      (enter) =>
+        enter
+          .append('rect')
+          .attr('class', (d) => d.x)
+          .attr('x', (d) => xScale(d.x) + 5)
+          .attr('y', (d) => plotHeight - yScale(d.y))
+          .attr('height', (d) => yScale(d.y))
+          .attr('width', xScale.bandwidth() - 10)
+          .attr('fill', (d) => srcColors(d.x)),
+      (update) =>
+        update.call((el) =>
+          el
+            .transition(t)
+            .attr('class', (d) => d.x)
+            .attr('x', (d) => xScale(d.x) + 5)
+            .attr('y', (d) => plotHeight - yScale(d.y))
+            .attr('height', (d) => yScale(d.y))
+            .attr('width', xScale.bandwidth() - 10)
+            .attr('fill', (d) => srcColors(d.x)),
+        ),
+    );
 
   chart.select('.axisContainerX').call(axisBottom(xScale));
   chart.select('.axisContainerY').call(
@@ -260,9 +349,8 @@ function renderBar(dataset, id, year) {
       .tickSizeOuter(0)
       .tickFormat(format('.2s')),
   );
-
   xLab.select('text').text('Source');
-  createLegend(barData, srcColors, legend);
+  // createLegend(barData, srcColors, legend);
 }
 
 //
@@ -374,7 +462,7 @@ function uxDynamic(data, id, defaults) {
     );
 
   // Containers for the Plot
-  buildContainers(id, xLab);
+  buildContainers(id, xLabel);
   // Lines Inside the Containers
   console.log('but the id is here, right?', id);
   renderLines(yCol, dataset, filterVal, colorScale, geog, id);
@@ -449,6 +537,7 @@ function renderLines(variable, dataset, filterVal, colorScale, place, id) {
   console.log('hi from the render');
   console.log('in the render, the id is', id);
 
+  var xLab = select(id).select('.axisLabelX');
   var chart = select(id).select('.chart');
   var legend = select(id).select('.legend');
   var plotContainer = select(id).select('.plotContainer');
@@ -501,9 +590,13 @@ function renderLines(variable, dataset, filterVal, colorScale, place, id) {
   chart
     .select('.axisContainerY')
     .call(axisLeft(yScale).ticks(5).tickSizeOuter(0).tickFormat(format('.2s')));
+  xLab.select('text').text(xLabel);
   createLegend(cat, colorScale, legend);
 }
 
+//
+//
+// Legend Creation Function
 function createLegend(dataset, colorScale, legend) {
   const t = transition().duration();
   const legVars = Object.keys(dataset);

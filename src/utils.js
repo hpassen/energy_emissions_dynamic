@@ -24,3 +24,7 @@ export function barFilter(dataset, barCat, barVar, rowCol, rowVal) {
     return acc;
   }, {});
 }
+
+export function columnHas(data, col, allowedValues) {
+  return data.filter((row) => allowedValues.includes(row[col]));
+}
