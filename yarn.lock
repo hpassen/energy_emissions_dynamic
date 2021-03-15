@@ -1605,7 +1605,7 @@ d3-collection@^1.0.7:
     iconv-lite "0.4"
     rw "1"
 
-"d3-ease@1 - 2":
+"d3-ease@1 - 2", d3-ease@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/d3-ease/-/d3-ease-2.0.0.tgz#fd1762bfca00dae4bacea504b1d628ff290ac563"
   integrity sha512-68/n9JWarxXkOWMshcT5IcjbB+agblQUaIsbnXmrzejn2O82n3p2A9R2zEB9HIEFWKFwPAEDDN8gR0VdSAyyAQ==
@@ -1621,6 +1621,11 @@ d3-fetch@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/d3-format/-/d3-format-2.0.0.tgz#a10bcc0f986c372b729ba447382413aabf5b0767"
   integrity sha512-Ab3S6XuE/Q+flY96HXT0jOXcM4EAClYFnRGY5zsjRGNy6qCYrQsMffs7cV5Q9xejb35zxW5hf/guKw34kvIKsA==
+
+d3-interpolate-path@^2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/d3-interpolate-path/-/d3-interpolate-path-2.2.1.tgz#fd8ff20a90aff3f380bcd1c15305e7b531e55d07"
+  integrity sha512-6qLLh/KJVzls0XtMsMpcxhqMhgVEN7VIbR/6YGZe2qlS8KDgyyVB20XcmGnDyB051HcefQXM/Tppa9vcANEA4Q==
 
 "d3-interpolate@1 - 2", "d3-interpolate@1.2.0 - 2":
   version "2.0.1"
