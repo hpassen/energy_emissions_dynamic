@@ -211,19 +211,18 @@ function handleStepEnter(response) {
 
   // update graphic based on step
   if (response.index < 2) {
+    // if need be, select lines and remove them
     if (response.direction == 'up' && response.index == 1) {
       var scrollfig = selectAll('#scrollfig');
       scrollfig.selectAll('.line').remove();
     }
-
     renderBar(defaults.dataset, id, scrollConfig[response.index]);
-    // select the lines and if it's not an empty array, remove the lines
   } else if (1 < response.index && response.index < 9) {
     if (response.direction == 'down' && response.index == 2) {
       var scrollfig = selectAll('#scrollfig');
       scrollfig.selectAll('rect').remove();
     }
-    // select the bars and if not empty, remove them
+
     var xCol = defaults.xCol;
     var yCol = defaults.yCol;
     var geog = defaults.geog;
@@ -572,7 +571,7 @@ function buildContainers(id, xLab) {
 
 function renderLines(xCol, yCol, dataset, filterVal, colorScale, place, id) {
   // const [axisContainerX, axisContainerY, plotContainer, legend] = pieces;
-  const t = transition().duration(1200);
+  const t = transition().duration(400);
 
   console.log('hi from the render');
   console.log('in the render, the id is', id);
@@ -624,19 +623,20 @@ function renderLines(xCol, yCol, dataset, filterVal, colorScale, place, id) {
           .attr('class', 'line')
           .attr('id', (_, i) => 'line' + i)
           .attr('d', (d) => lineScale(d))
-          .attr('stroke', (d) => colorScale(get_color(d, filterVal)))
-          .attr('stroke-dasharray', '1000 1000')
-          .attr('stroke-dashoffset', 0),
+          .attr('stroke', (d) => colorScale(get_color(d, filterVal))),
+      // .attr('stroke-dasharray', '1000 1000')
+      // .attr('stroke-dashoffset', 0),
 
       (update) =>
         update.call((el) =>
           el
-            .attr('d', (d) => lineScale(d))
-            .style('opacity', 1)
-            .attr('stroke', (d) => colorScale(get_color(d, filterVal)))
             .attr('stroke-dasharray', '1000 1000')
             .attr('stroke-dashoffset', '1000')
             .transition(t)
+            .attr('d', (d) => lineScale(d))
+            .style('opacity', 1)
+            .attr('stroke', (d) => colorScale(get_color(d, filterVal)))
+
             .attr('stroke-dashoffset', 0),
         ),
     )
