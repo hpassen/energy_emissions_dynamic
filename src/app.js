@@ -56,7 +56,6 @@ const renewColors = scaleOrdinal()
 var id = '#scrollfig';
 var scrolly = select('#scrolly');
 var figure = scrolly.select('figure');
-var chart = scrolly.select('#chart');
 var article = scrolly.select('article');
 var step = article.selectAll('.step');
 var myData = {};
@@ -72,27 +71,27 @@ const scrollConfig = {
   6: ['Nuclear'],
   7: ['Wind'],
   8: ['Solar'],
-  9: [
-    'Coal',
-    'Petroleum',
-    'Natural Gas',
-    'Geothermal',
-    'Hydroelectric',
-    'Nuclear',
-    'Wind',
-    'Solar',
-  ],
+  9: ['Coal', 'Natural Gas', 'Hydroelectric', 'Nuclear', 'Wind', 'Solar'],
   10: ['Renewable'],
   11: ['Renewable', 'Nonrenewable'],
 };
 
 // Set up Chart Sizing Constants
-const width = 600;
+const width = 700;
 const height = (24 / 36) * width;
-const margin = {top: 60, bottom: 80, right: 30, left: 100};
+const margin = {top: 20, bottom: 80, right: 40, left: 100};
 const plotHeight = height - margin.top - margin.bottom;
 const plotWidth = width - margin.left - margin.right;
-const sizes = {
+
+var sizesDynamic = {
+  width: width,
+  height: height,
+  margin: margin,
+  plotHeight: plotHeight,
+  plotWidth: plotWidth,
+};
+
+var sizesStatic = {
   width: width,
   height: height,
   margin: margin,
@@ -129,32 +128,20 @@ Promise.all(
     console.log('in the promise...defaults:', defaults);
 
     //Build the Axes/Chart Body
-    buildContainers('#scrollfig', defaults.xLabel, sizes);
+    buildContainers('#scrollfig', defaults.xLabel, sizesDynamic);
 
     // Generate the scroll and the interactive dropdowns
     scroll();
 
-    buildContainers('#bar', defaults.xLabel, sizes);
-    testBar(source, '#bar', 1990, sizes, colors);
-    buildContainers('#smalllines', defaults.xLabel, sizes);
+    buildContainers('#bar', defaults.xLabel, sizesStatic);
+    testBar(source, '#bar', 1990, sizesStatic, colors);
+    buildContainers('#smalllines', defaults.xLabel, sizesStatic);
     testLines(source, '#smalllines');
     uxDynamic(results, '#dynamic', defaults);
   })
   .catch((e) => {
     console.log(e);
   });
-
-// //Build the Axes/Chart Body
-// buildContainers('#scrollfig', xLabel);
-
-// // Generate the scroll and the interactive dropdowns
-// scroll();
-
-// buildContainers('#bar', xLabel);
-// testBar(myData.src, '#bar', 1990);
-// buildContainers('#smalllines', xLabel);
-// testLines(myData.src, '#smalllines');
-// uxDynamic([myData.renew, myData.src], '#dynamic', defaults);
 
 //
 //
@@ -169,28 +156,31 @@ function handleResize() {
   var stepH = Math.floor(window.innerHeight * 0.75);
   step.style('height', stepH + 'px');
 
-  var figureHeight = window.innerHeight / 2;
-  var figureWidth = figureHeight / (24 / 36);
+  // 2. update the figure sizes
+  var figureHeight = window.innerHeight / 1.5;
+  var figureWidth = window.innerWidth / 2;
   var figureMarginTop = (window.innerHeight - figureHeight) / 2;
 
   var scaleH = figureHeight / height;
   var scaleW = figureWidth / width;
 
-  console.log('...the figure height and width are', figureHeight, figureWidth);
   figure
     .style('height', figureHeight + 'px')
     .style('width', figureWidth + 'px')
     .style('top', figureMarginTop + 'px');
 
-  console.log(
-    '... so the plot height should be',
-    plotHeight * scaleH,
-    plotWidth * scaleW,
-  );
-  chart
-    .attr('height', plotHeight * scaleH + 'px')
-    .attr('width', plotWidth * scaleW + 'px');
-  // 3. tell scrollama to update new element dimensions
+  // 4. update the sizes variable
+  sizesDynamic.height = figureHeight;
+  sizesDynamic.width = figureWidth * 0.8;
+  sizesDynamic.plotHeight = plotHeight * scaleH;
+  sizesDynamic.plotWidth = figureWidth * 0.8 - margin.left - margin.right;
+
+  // 3. update the chart sizes
+  select('.chart')
+    .attr('height', figureHeight + 'px')
+    .attr('width', figureWidth * 0.8 + 'px');
+
+  // 5. tell scrollama to update new element dimensions
   scroller.resize();
 }
 
@@ -206,24 +196,26 @@ function handleStepEnter(response) {
 
   // update graphic based on step
   if (response.index < 2) {
-    // remove the lines on the way up
+    // remove the lines & legend on the way up
     if (response.direction == 'up' && response.index == 1) {
       var scrollfig = selectAll('#scrollfig');
       scrollfig.selectAll('.line').remove();
-      scrollfig.selectAll('.legend').remove();
+      scrollfig.selectAll('.legend').style('opacity', 0);
     }
+    // make the bar charts
     renderBar(
       defaults.dataset,
       id,
       scrollConfig[response.index],
-      sizes,
+      sizesDynamic,
       colors,
     );
   } else if (1 < response.index && response.index < 10) {
-    // remove the rectangles on the way down
+    // remove the rectangles and add legend on the way down
     if (response.direction == 'down' && response.index == 2) {
       var scrollfig = selectAll('#scrollfig');
       scrollfig.selectAll('rect').remove();
+      scrollfig.selectAll('.legend').style('opacity', 1);
     }
 
     var filters = scrollConfig[response.index];
@@ -236,9 +228,15 @@ function handleStepEnter(response) {
       defaults.colorScale,
       defaults.geog,
       id,
-      sizes,
+      sizesDynamic,
     );
+
+    // if (response.index !== 5 || response.index !== 9) {
+    //   var scrollfig = selectAll('#scrollfig');
+    //   scrollfig.selectAll('.legend').remove();
+    // }
   } else {
+    // swap to renewables dataset
     var filters = scrollConfig[response.index];
     var lineData = columnHas(myData.renew, 'renew', filters);
     renderLines(
@@ -249,7 +247,7 @@ function handleStepEnter(response) {
       colors.renew,
       defaults.geog,
       id,
-      sizes,
+      sizesDynamic,
     );
   }
 }
@@ -273,7 +271,7 @@ function scroll(scrollConfig) {
   scroller
     .setup({
       step: '#scrolly article .step',
-      offset: 0.33,
+      offset: 0.45,
       debug: true,
     })
     .onStepEnter(handleStepEnter);
@@ -335,7 +333,16 @@ function uxDynamic(data, id, defaults) {
     .on('change', (event) => {
       var measure = event.target.value;
       yCol = measures[measure];
-      renderLines(xCol, yCol, dataset, filterVal, colorScale, geog, id, sizes);
+      renderLines(
+        xCol,
+        yCol,
+        dataset,
+        filterVal,
+        colorScale,
+        geog,
+        id,
+        sizesStatic,
+      );
     })
     .selectAll('option')
     .data((dim) => measures_vars.map((measurement) => ({measurement, dim})))
@@ -359,7 +366,16 @@ function uxDynamic(data, id, defaults) {
     .append('select')
     .on('change', (event) => {
       [dataset, filterVal, colorScale] = datasets[event.target.value];
-      renderLines(xCol, yCol, dataset, filterVal, colorScale, geog, id, sizes);
+      renderLines(
+        xCol,
+        yCol,
+        dataset,
+        filterVal,
+        colorScale,
+        geog,
+        id,
+        sizesStatic,
+      );
     })
     .selectAll('option')
     .data((dim) => datasets_vars.map((dataset) => ({dataset, dim})))
@@ -384,7 +400,16 @@ function uxDynamic(data, id, defaults) {
     .on('change', (event) => {
       geog = event.target.value;
       console.log('In the geog_dd, the geog is', geog);
-      renderLines(xCol, yCol, dataset, filterVal, colorScale, geog, id, sizes);
+      renderLines(
+        xCol,
+        yCol,
+        dataset,
+        filterVal,
+        colorScale,
+        geog,
+        id,
+        sizesStatic,
+      );
     })
     .selectAll('option')
     .data((dim) => geogs_vars.map((state) => ({state, dim})))
@@ -395,10 +420,19 @@ function uxDynamic(data, id, defaults) {
     );
 
   // Containers for the Plot
-  buildContainers(id, defaults.xLabel, sizes);
+  buildContainers(id, defaults.xLabel, sizesStatic);
   // Lines Inside the Containers
   console.log('but the id is here, right?', id);
-  renderLines(xCol, yCol, dataset, filterVal, colorScale, geog, id, sizes);
+  renderLines(
+    xCol,
+    yCol,
+    dataset,
+    filterVal,
+    colorScale,
+    geog,
+    id,
+    sizesStatic,
+  );
 }
 
 //
@@ -425,12 +459,21 @@ function testLines(dataset, id) {
   var lineData = columnHas(loc, 'src', filters);
   console.log('...testing columnhas:', lineData);
 
-  renderLines(xCol, yCol, lineData, filterVal, colorScale, geog, id, sizes);
+  renderLines(
+    xCol,
+    yCol,
+    lineData,
+    filterVal,
+    colorScale,
+    geog,
+    id,
+    sizesStatic,
+  );
 }
 
 //
 //
 // TESTING THE BARS
-function testBar(dataset, figID, year, sizes, colors) {
-  renderBar(dataset, figID, year, sizes, colors);
+function testBar(dataset, figID, year, sizesStatic, colors) {
+  renderBar(dataset, figID, year, sizesStatic, colors);
 }

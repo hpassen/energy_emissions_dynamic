@@ -72,7 +72,7 @@ export function buildContainers(id, xLab, sizes) {
     .append('svg')
     .attr('class', 'legend')
     .attr('height', height)
-    .attr('width', plotWidth / 4)
+    .attr('width', 110)
     .append('g')
     .attr('class', 'legendContainer')
     .attr('transform', `translate(0, ${height / 3.5})`);
@@ -221,8 +221,8 @@ export function renderLines(
       (update) =>
         update.call((el) =>
           el
-            .attr('stroke-dasharray', '1000 1000')
-            .attr('stroke-dashoffset', '1000')
+            .attr('stroke-dasharray', '2000, 2000') //`${sizes.width * 2} ${sizes.width * 2}`)
+            .attr('stroke-dashoffset', 2000) //`${sizes.width * 2}`)
             .transition(t)
             .attr('d', (d) => lineScale(d))
             .style('opacity', 1)

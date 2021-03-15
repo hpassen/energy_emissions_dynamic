@@ -5,7 +5,7 @@ a {
 
 html,
 body {
-  /* background: #D6D6CE; */
+  /* background: #d1f7d3; */
   font-family: Arial, Helvetica, sans-serif; 
   height: 100%;
   margin: 0;
@@ -20,11 +20,12 @@ p {
   margin: 0;
   /* padding-top: 20px; */
   padding-bottom: 20px;
+  max-width: 1000px;
 }
 
-/* text {
-  font-size: 9pt;
-} */
+section{
+  padding-bottom: 40px;
+}
 
 #header {
   display: flex;
@@ -33,7 +34,7 @@ p {
   align-items: center;
   /* width: 100%; */
   margin-right: 15%;
-  margin-left: 15%;
+  /* margin-left: 15%; */
   padding-top: 60px;
 }
 
@@ -43,17 +44,16 @@ p {
   justify-content: flex-start;
   align-items: flex-start;
   /* width: 100%; */
-  margin-right: 15%;
   margin-left: 15%;
 }
 
 #interactive {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   /* width: 100%; */
-  margin-right: 15%;
+  /* margin-right: 15%; */
   margin-left: 15%;
   /* border: thin solid black */
 }
@@ -61,7 +61,7 @@ p {
 #ux {
   display: flex;
   flex-direction: row;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   width: 100%;
   /* margin-right: 15%;
@@ -72,18 +72,23 @@ p {
 #dynamic {
   display: flex;
   flex-direction: row;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   width: 100%;
+  padding-top: 30px;
   /* margin-right: 15%;
   margin-left: 15%; */
   /* border: thin solid red */
 }
 
+.legend {
+  /* border: thin solid red */
+}
+
 .dropdown {
   font-size: '10pt';
-  padding-left: 40px;
-  padding-right: 40px;
+  /* padding-left: 40px; */
+  padding-right: 80px;
 }
 
 .bump_bottom {
@@ -114,50 +119,51 @@ p {
   display: flex;
   flex-direction: row;
   background-color: white;
-  justify-content: space-around;
+  justify-content: flex-start;
   /* padding: 1rem; */
-  margin-right: 15%;
+  /* margin-right: 15%; */
   margin-left: 15%;
 }
 
-#scrolly > * {
+/* #scrolly > * {
   -webkit-box-flex: 1;
   -ms-flex: 1;
   flex: 1;
-}
+} */
 
 article {
   position: relative;
   padding: 0 1rem;
-  max-width: 20rem;
+  max-width: 15rem;
 }
 
 figure {
   display: flex;
   flex-direction: row;
+  justify-content: flex-start;
   position: sticky;
   /* width: 800px;
   height: 800px; */
-  margin: 0;
+  /* margin: 0;
   -webkit-transform: translate3d(0, 0, 0);
   -moz-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0); */
   /* background-color: #8a8a8a; */
-  z-index: 0;
-  border: thin solid black
+  /* z-index: 0; */
+  /* border: thin solid black */
 }
 
 #scrollfig {
   display: flex;
   flex-direction: row;
   text-align: center;
-  padding: 1rem;
+  /* padding: 1rem; */
   position: absolute;
-  top: 50%;
+  /* top: 50%;
   left: 50%;
   -moz-transform: translate(-50%, -50%);
   -webkit-transform: translate(-50%, -50%);
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%); */
   /* font-size: 8rem;
   font-weight: 900; */
   /* color: #fff; */
@@ -165,10 +171,13 @@ figure {
 
 .step {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   margin: 0 auto 2rem auto;
-  /* background-color: yellow; */
+  background-color: yellow;
+  padding-top: 3%;
+  padding-bottom: 3%;
   color: #fff;
 }
 
@@ -182,14 +191,15 @@ figure {
 }
 
 .step p {
-  text-align: center;
-  padding: 1rem;
-  font-size: 12pt;
+  text-align: left;
+  text-justify: center;
+  /* padding: 1rem; */
+  font-size: 11pt;
   color: lightgray
 }
 
 #outro {
-  padding-top: 200px;
+  padding-top: 50px;
 }
 
 
@@ -202,7 +212,7 @@ svg {
 #bar{
   display: flex;
   flex-direction: row;
-  margin-right: 15%;
+  /* margin-right: 15%; */
   margin-left: 15%;
   padding-bottom: 200px;
 }
@@ -210,7 +220,11 @@ svg {
 #smalllines{
   display: flex;
   flex-direction: row;
-  margin-right: 15%;
+  /* margin-right: 15%; */
   margin-left: 15%;
   padding-bottom: 200px;
+}
+
+.chart {
+  /* border: thin solid blue */
 }
