@@ -114,6 +114,7 @@ p {
   display: flex;
   flex-direction: row;
   background-color: white;
+  justify-content: space-around;
   /* padding: 1rem; */
   margin-right: 15%;
   margin-left: 15%;
@@ -167,7 +168,7 @@ figure {
   align-items: center;
   justify-content: flex-start;
   margin: 0 auto 2rem auto;
-  /* background-color: #3b3b3b; */
+  /* background-color: yellow; */
   color: #fff;
 }
 
