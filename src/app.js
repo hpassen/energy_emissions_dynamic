@@ -133,10 +133,10 @@ Promise.all(
     // Generate the scroll and the interactive dropdowns
     scroll();
 
-    buildContainers('#bar', defaults.xLabel, sizesStatic);
-    testBar(source, '#bar', 1990, sizesStatic, colors);
-    buildContainers('#smalllines', defaults.xLabel, sizesStatic);
-    testLines(source, '#smalllines');
+    // buildContainers('#bar', defaults.xLabel, sizesStatic);
+    // testBar(source, '#bar', 1990, sizesStatic, colors);
+    // buildContainers('#smalllines', defaults.xLabel, sizesStatic);
+    // testLines(source, '#smalllines');
     uxDynamic(results, '#dynamic', defaults);
   })
   .catch((e) => {
@@ -151,12 +151,7 @@ var scroller = scrollama();
 
 // generic window resize listener event
 function handleResize() {
-  // 1. update height of step elements
-  // var stepH = Math.floor(window.innerHeight * 0.75);
-  var stepH = Math.floor(window.innerHeight * 0.75);
-  step.style('height', stepH + 'px');
-
-  // 2. update the figure sizes
+  // set resize variables
   var figureHeight = window.innerHeight / 1.5;
   var figureWidth = window.innerWidth / 2;
   var figureMarginTop = (window.innerHeight - figureHeight) / 2;
@@ -164,6 +159,11 @@ function handleResize() {
   var scaleH = figureHeight / height;
   var scaleW = figureWidth / width;
 
+  // 1. update height of step elements
+  var stepH = Math.floor(window.innerHeight * 0.6);
+  step.style('height', stepH + 'px');
+
+  // 2. update the figure sizes
   figure
     .style('height', figureHeight + 'px')
     .style('width', figureWidth + 'px')
@@ -189,7 +189,7 @@ function handleStepEnter(response) {
   console.log(response);
   // response = { element, direction, index }
 
-  // add color to current step only
+  // update the color of the text in each step
   step.classed('is-active', function (d, i) {
     return i === response.index;
   });
@@ -217,7 +217,7 @@ function handleStepEnter(response) {
       scrollfig.selectAll('rect').remove();
       scrollfig.selectAll('.legend').style('opacity', 1);
     }
-
+    // make the line chart
     var filters = scrollConfig[response.index];
     var lineData = columnHas(defaults.dataset, 'src', filters);
     renderLines(
@@ -230,13 +230,8 @@ function handleStepEnter(response) {
       id,
       sizesDynamic,
     );
-
-    // if (response.index !== 5 || response.index !== 9) {
-    //   var scrollfig = selectAll('#scrollfig');
-    //   scrollfig.selectAll('.legend').remove();
-    // }
   } else {
-    // swap to renewables dataset
+    // swap to renewables dataset and make the line chart
     var filters = scrollConfig[response.index];
     var lineData = columnHas(myData.renew, 'renew', filters);
     renderLines(
@@ -271,7 +266,7 @@ function scroll(scrollConfig) {
   scroller
     .setup({
       step: '#scrolly article .step',
-      offset: 0.45,
+      offset: 0.5,
       debug: true,
     })
     .onStepEnter(handleStepEnter);
@@ -435,45 +430,40 @@ function uxDynamic(data, id, defaults) {
   );
 }
 
-//
-//
-// Credit for Line Animation
-// http://bl.ocks.org/fryford/2925ecf70ac9d9b51031
+// //TESTING THE FILTERED LINES
+// function testLines(dataset, id) {
+//   console.log('...testing...data:', dataset);
+//   console.log('...testing...id:', id);
+//   // DEFAULTS
+//   var xCol = defaults.xCol;
+//   var yCol = defaults.yCol;
+//   var geog = defaults.geog;
+//   var filterVal = defaults.filterVal;
+//   var colorScale = defaults.colorScale;
 
-//TESTING THE FILTERED LINES
-function testLines(dataset, id) {
-  console.log('...testing...data:', dataset);
-  console.log('...testing...id:', id);
-  // DEFAULTS
-  var xCol = defaults.xCol;
-  var yCol = defaults.yCol;
-  var geog = defaults.geog;
-  var filterVal = defaults.filterVal;
-  var colorScale = defaults.colorScale;
+//   const t = transition().duration(800);
+//   const loc = filter_geog(dataset, 'United States');
+//   console.log('...testing... loc:', loc);
 
-  const t = transition().duration(800);
-  const loc = filter_geog(dataset, 'United States');
-  console.log('...testing... loc:', loc);
+//   var filters = ['Coal', 'Wind'];
+//   var lineData = columnHas(loc, 'src', filters);
+//   console.log('...testing columnhas:', lineData);
 
-  var filters = ['Coal', 'Wind'];
-  var lineData = columnHas(loc, 'src', filters);
-  console.log('...testing columnhas:', lineData);
+//   renderLines(
+//     xCol,
+//     yCol,
+//     lineData,
+//     filterVal,
+//     colorScale,
+//     geog,
+//     id,
+//     sizesStatic,
+//   );
+// }
 
-  renderLines(
-    xCol,
-    yCol,
-    lineData,
-    filterVal,
-    colorScale,
-    geog,
-    id,
-    sizesStatic,
-  );
-}
-
-//
-//
-// TESTING THE BARS
-function testBar(dataset, figID, year, sizesStatic, colors) {
-  renderBar(dataset, figID, year, sizesStatic, colors);
-}
+// //
+// //
+// // TESTING THE BARS
+// function testBar(dataset, figID, year, sizesStatic, colors) {
+//   renderBar(dataset, figID, year, sizesStatic, colors);
+// }
