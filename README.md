@@ -6,7 +6,7 @@ The project, in JavaScript and d3, involves a dynamic guided tour through the hi
 ### Live Link
 The live website for this project: 
 hpassen.github.io/energy-emissions-dynamic
-**NOTE:** This website is not mobile-friendly, and will render best on a desktop or laptop. To resize, please refresh the page. 
+**NOTE:** This website is not designed to be mobile-friendly, and will render best on a desktop or laptop. To resize, please refresh the page. 
 
 ### Libraries
 This project makes us of the d3 and scrollama libraries
@@ -40,6 +40,5 @@ https://worldpopulationreview.com/states/state-abbreviations
 
 - Andres Nigenda's interactive project on skin tones and social mobility in Mexico, for inspiration on how to structure a scrollama project: https://github.com/andresnigenda/dynamic-skintone
 
-- user fryford's post on animating lines, for help in animating lines: http://bl.ocks.org/fryford/2925ecf70ac9d9b51031
-
+- user fryford's post on animating lines, for instructions on animating lines: http://bl.ocks.org/fryford/2925ecf70ac9d9b51031
 

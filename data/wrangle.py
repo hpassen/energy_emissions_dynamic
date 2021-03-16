@@ -8,8 +8,7 @@ import geopandas as gpd
 
 CODE = "./state_codes.csv"
 POPS = ["./pop_90-99.csv", "./pop_00-10.csv", "./pop_10-19.csv"]
-LEG = "./leg_90-19.csv"
-ENG = ["./generation_annual.csv", "./emission_annual.csv"]
+ENG = ["./generation_annual.csv"]
 
 PUNCTUATION = "!@#$%^&*."
 VARS = {"gen": ["gen_mwh", "mwh_pp",], 
@@ -99,38 +98,6 @@ def build_pop(files=POPS):
     return pop_df
 
 
-def load_clean_pol(filename=LEG):
-    '''
-    Loads and cleans a data set with energy data
-
-    Inputs: 
-        filename (str): the string for the filepath
-
-    Returns: 
-        pol_df (pandas df): cleaned dataframe of power generation data  
-    '''
-    letters = load_codes()
-
-    df = pd.read_csv(filename)
-    df.columns = df.columns.str.lower()
-
-    for col in [col for col in df.columns if col != "state"]:
-        df[col] = df[col].str.strip(PUNCTUATION)
-        df[col] = df[col].str.replace("Divided", "Split")
-
-    pol_df = letters.merge(df, how="inner", on="state")
-    #Nebraska has a unicameral legislature, so I am including it as split
-    pol_df.fillna("Split", inplace=True)
-
-    pol_df = pol_df.melt(id_vars=["state", "code"], 
-                         value_vars=[col for col in pol_df.columns if 
-                                     col not in ["state", "code"]])
-    
-    pol_df = pol_df.rename(columns={"variable": "year", "value": "pol"})
-
-    return pol_df
-
-
 def load_clean_eng(filename):
     '''
     Loads and cleans a data set with energy data
@@ -146,25 +113,17 @@ def load_clean_eng(filename):
     df.columns = df.columns.str.replace(" ", "_", regex=True)
     df.columns = df.columns.str.replace(r"\n", "_", regex=True)
 
-    if "generation" in filename:
-        df = df.rename(columns={"energy_source": "src", 
-                                "generation_(megawatthours)": "gen_mwh"})
-        
-        df["renew"] = np.where((df["src"] == "Coal") | 
-                               (df["src"] == "Natural Gas") | 
-                               (df["src"] == "Petroleum"), "Nonrenewable", "Renewable")
+    df = df.rename(columns={"energy_source": "src", 
+                            "generation_(megawatthours)": "gen_mwh"})
+    
+    df["renew"] = np.where((df["src"] == "Coal") | 
+                            (df["src"] == "Natural Gas") | 
+                            (df["src"] == "Petroleum"), "Nonrenewable", "Renewable")
 
-        totals_mask = df.loc[:, "type_of_producer"] == "Total Electric Power Industry"
-        keep_cols = [col for col in df.columns if col != "type_of_producer"]
+    totals_mask = df.loc[:, "type_of_producer"] == "Total Electric Power Industry"
+    keep_cols = [col for col in df.columns if col != "type_of_producer"]
 
-        df = df.loc[df.loc[:, "src"] != "Total", :]    
-     
-    elif "emission" in filename:
-        df = df.rename(columns={"energy_source": "src", 
-                                "co2_(metric_tons)": "co2_tons"}) 
-
-        totals_mask = df.loc[:, "producer_type"] == "Total Electric Power Industry"
-        keep_cols = ['year', 'state', 'src', 'co2_tons']
+    df = df.loc[df.loc[:, "src"] != "Total", :]    
 
     eng_df = df.loc[totals_mask, keep_cols]
     eng_df.reset_index(drop=True, inplace=True)
