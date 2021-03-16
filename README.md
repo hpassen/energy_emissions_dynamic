@@ -14,7 +14,7 @@ This project makes us of the d3 and scrollama libraries
 - scrollama: https://github.com/russellgoldenberg/scrollama 
 
 ### Data 
-Data downloaded, wrangled, and output as json in the data directory 
+Data downloaded as csv and pdf, wrangled in python, and output as json in the data directory 
 
 **United States Census Bureau**
 *Intercensal Population Estimates, 1990-2019 (manually collated)*

@@ -1,20 +1,21 @@
 import {select, selectAll} from 'd3-selection';
-import {scaleLinear, scaleBand, scaleOrdinal, scaleThreshold} from 'd3-scale';
+import {scaleLinear, scaleBand, scaleOrdinal} from 'd3-scale';
 import {extent} from 'd3-array';
 import {line} from 'd3-shape';
 import {axisLeft, axisBottom, tickFormat} from 'd3-axis';
 import {format} from 'd3-format';
 import {transition} from 'd3-transition';
-import {filter_geog, get_color, barFilter, columnHas} from './utils';
-import {get_cats} from './utils';
+import {filter_geog, get_color, get_cats, barFilter, columnHas} from './utils';
 
-// Set up Chart Sizing Constants
-// const width = 600;
-// const height = (24 / 36) * width;
-// const margin = {top: 60, bottom: 80, right: 30, left: 100};
-// const plotHeight = height - margin.top - margin.bottom;
-// const plotWidth = width - margin.left - margin.right;
-
+//
+//
+// Plot Component Setup Function
+// Inputs:
+//      id (str): the section id on the page where the svg will be bound
+//      xLab (str): the label for the X axis
+//      sizes (obj): an object containing the sizes for the figure and the
+//                   chart area
+//
 export function buildContainers(id, xLab, sizes) {
   const width = sizes.width;
   const height = sizes.height;
@@ -80,21 +81,30 @@ export function buildContainers(id, xLab, sizes) {
   const legText = legend.append('g').attr('class', 'legText');
 }
 
+//
+//
+// Bar Chart Rendering Function
+// Inputs:
+//        dataset (array): an array of the data to use in the plot
+//        id (str): the id on the page where the svg will be bound
+//        year (num): the year of data to represent
+//        sizes (obj): an object containing the sizes for the figure and the
+//                   chart area
+//        colors (obj): an object containing two color scales
+//
 export function renderBar(dataset, id, year, sizes, colors) {
+  // Set up the variables
   const t = transition().duration(800);
   const loc = filter_geog(dataset, 'United States');
-
   const srcColors = colors.src;
 
+  // Get the data ready
   const barData = barFilter(loc, 'src', 'gen_mwh', 'year', year);
   const remapped = Object.entries(barData).map(([x, y]) => ({x, y}));
-  console.log('... the data for my bars is', barData);
-  console.log('...and remapped it is:', remapped);
 
   // Make the Domains and Scales
   const xDomain = Object.keys(barData);
   const yDomain = extent(remapped, (d) => d.y);
-  console.log(xDomain, yDomain);
 
   const xScale = scaleBand().domain(xDomain).range([0, sizes.plotWidth]);
   const yScale = scaleLinear()
@@ -106,6 +116,7 @@ export function renderBar(dataset, id, year, sizes, colors) {
   var legend = select(id).select('.legend');
   var plotContainer = select(id).select('.plotContainer');
 
+  // build the bars
   plotContainer
     .selectAll('rect')
     .data(remapped)
@@ -147,9 +158,23 @@ export function renderBar(dataset, id, year, sizes, colors) {
       .tickFormat(format('.2s')),
   );
   xLab.select('text').text('Source').style('opacity', 0);
-  // createLegend(barData, srcColors, legend);
 }
 
+//
+//
+// Line Chart Rendering Function
+// Inputs:
+//        xCol (str): the name of the column across the X axis
+//        yCol (str): the name of the column for the Y axis
+//        dataset (array): the data to be plotted - an array of objects in which
+//                         each object represents a row of data
+//        filterval (str): the name of a column that will filter for categories
+//        colorScale (d3 scaleOrdinal object): a scale mapping colors to values
+//        place (str): a geography to filter in the data
+//        id (str): the id on the page where the svg will be bound
+//        sizes (obj): an object containing the sizes for the figure and the
+//                   chart area
+//
 export function renderLines(
   xCol,
   yCol,
@@ -160,31 +185,24 @@ export function renderLines(
   id,
   sizes,
 ) {
-  // const [axisContainerX, axisContainerY, plotContainer, legend] = pieces;
+  // set up the chart components
   const t = transition().duration(400);
-
-  console.log('hi from the render');
-  console.log('in the render, the id is', id);
-  console.log('in the render, the sizes are', sizes);
-
   var xLab = select(id).select('.axisLabelX');
   var chart = select(id).select('.chart');
   var legend = select(id).select('.legend');
   var plotContainer = select(id).select('.plotContainer');
 
+  // get the data
   const loc = filter_geog(dataset, place);
   const cat = get_cats(loc, filterVal);
 
   // Domains and Scales
   const xDomain = extent(loc, (d) => d[xCol]);
   const yDomain = extent(loc, (d) => d[yCol]);
-  console.log(xDomain, yDomain);
-
   const xScale = scaleLinear().domain(xDomain).range([0, sizes.plotWidth]);
   const yScale = scaleLinear()
     .domain([0, yDomain[1]])
     .range([sizes.plotHeight, 0]);
-
   const lineScale = line()
     .x((d) => xScale(d[xCol]))
     .y((d) => yScale(d[yCol]));
@@ -215,19 +233,16 @@ export function renderLines(
           .attr('id', (_, i) => 'line' + i)
           .attr('d', (d) => lineScale(d))
           .attr('stroke', (d) => colorScale(get_color(d, filterVal))),
-      // .attr('stroke-dasharray', '1000 1000')
-      // .attr('stroke-dashoffset', 0),
 
       (update) =>
         update.call((el) =>
           el
-            .attr('stroke-dasharray', '2000, 2000') //`${sizes.width * 2} ${sizes.width * 2}`)
-            .attr('stroke-dashoffset', 2000) //`${sizes.width * 2}`)
+            .attr('stroke-dasharray', '2000, 2000')
+            .attr('stroke-dashoffset', 2000)
             .transition(t)
             .attr('d', (d) => lineScale(d))
             .style('opacity', 1)
             .attr('stroke', (d) => colorScale(get_color(d, filterVal)))
-
             .attr('stroke-dashoffset', 0),
         ),
     )
@@ -238,12 +253,19 @@ export function renderLines(
 //
 //
 // Legend Creation Function
+//        dataset (array): the data to be plotted - an array of objects in which
+//                         each object represents a row of data
+//        colorScale (d3 scaleOrdinal object): a scale mapping colors to values
+//        legend (d3 selection object): a selection of the legend on the page
+//
 function createLegend(dataset, colorScale, legend) {
+  // set up the legend pieces
   const t = transition().duration();
   const legVars = Object.keys(dataset);
   const legRects = legend.select('.legRects');
   const legText = legend.select('.legText');
 
+  // plot the squares and text
   legRects
     .selectAll('rect')
     .data(legVars)

@@ -8,6 +8,7 @@
   </head>
   <body>
     <section id="intro">
+
     <div id="header">
       <h1>Energy and Emissions in America</h1> 
     </div>
@@ -22,6 +23,7 @@
     </section>
 
     <section id="scrolly">
+
       <article>
         <div class="step" data-step="1" class="is-active">
           <p>In 1990 The US energy landscape was dominated by coal, which generated over 1.5 billion megawatt hours of power.</p>
@@ -57,11 +59,11 @@
         <div class="step" data-step="8">
           <p>The largest increase in renewable power comes from wind energy.</p>
           <p>From near non-existence in 1990, wind power grew slowly through the mid 2000s, when it picked up momentum.</p>
-          <p>Once wind power started to grow, it grew quickly - in the last 15 year wind power generation grew by a factor of 10.</p>
+          <p>Once wind power started to grow, it grew quickly - in the last 15 year wind power generation increased by a factor of 10.</p>
         </div>
         <div class="step" data-step="9">
-          <p>Solar power was delayed even longer than wind</p>
-          <p>Solar power generation was near-zero through the early 2010s, before picking up quickly through the last decade.</p>
+          <p>Solar power was delayed even longer than wind.</p>
+          <p>It was near-zero through the early 2010s, before picking up quickly through the last decade.</p>
           <p>By 2019, solar power generation had reached nearly 70 million megawatt hours - and growth does not appear to be slowing.</p>
         </div>
         <div class="step" data-step="10">
@@ -73,7 +75,7 @@
         </div>
         <div class="step" data-step="12">
           <p>However, the final picture is mixed.</p>
-          <p>Mostly due to the massive growth in natural gas, non-renewable energy has also grown during the same time period.</p>
+          <p>Mostly due to the massive growth in natural gas generation, non-renewable energy has also grown during the same time period.</p>
           <p>It is promising, however, that while renewable energy is trending upwards, nonrenewable energy has been trending downwards since the late 1990s.</p>
           <p>If this trend continues, we may yet reach a future in which renewable source of power produce more of our energy than nonrenewables.</p>
         </div>
@@ -82,6 +84,7 @@
       <figure>
         <div id="scrollfig"></div>
       </figure>
+
     </section>
 
     <section id="uxline">
@@ -99,24 +102,60 @@
         <h3>I'd like to explore:</h3>
       </div>
       <div id="interactive">
-        <div class="tight">
-
-        </div>
         <div id="ux"></div>
         <div id="dynamic"></div>
       </div>
     </section>
 
     <section id="intro">
-      <h3>Data and Credits</h3>
+      <h2>Data and Credits</h2>
+      <h3>Data</h3>
       <div>
-        TEXT GOES HERE
+        <div>
+          <p class="source tight">United States Census Bureau</p>
+          <p class="dataset tight">Intercensal Population Estimates, 1990-2019 (manually collated)</p>
+          <ul>
+            <li>
+              <a href='https://www.census.gov/data/tables/time-series/demo/popest/2010s-state-total.html'>2010-2019</a>
+            </li>
+            <li>
+              <a href='https://www2.census.gov/programs-surveys/popest/tables/2000-2010/intercensal/state/'>2000-2010</a>
+            </li>
+            <li>
+              <a href='https://www2.census.gov/programs-surveys/popest/tables/1990-2000/intercensal/st-co/co-est2001-12-00.pdf'>1990-2000</a>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <p class="source tight">United States Energy Information Administration</p>
+          <a href='https://www.eia.gov/electricity/data/state/' class="dataset">Net Generation by State by Type of Producer by Energy Source, 1990-2019</a>
+        </div>
+        <div>
+          <p class="source tight">United States Energy Information Administration</p>
+          <a href='https://www.eia.gov/electricity/data/state/' class="dataset">U.S. Electric Power Industry Estimated Emissions by State, 1990-2019</a>
+        </div>
+        <div class="tight">
+          <p class="source tight">World Population Review</p>
+          <a href=https://worldpopulationreview.com/states/state-abbreviations class="dataset">State Names and Two-Letter Codes</a>
+        </div>
+      </div>
+      <h3>Credits</h3>
+      <div>
+        <ul>
+          <li>
+            Andrew McNutt's teaching notes and examples for setting up interactive dropdowns
+          </li>
+          <li>
+            Andres Nigenda's <a href='https://github.com/andresnigenda/dynamic-skintone'>interactive project on skin tones and social mobility in Mexico</a>, for inspiration on how to structure a scrollama project 
+          </li>
+          <li>
+            User fryford's <a href='http://bl.ocks.org/fryford/2925ecf70ac9d9b51031'>post on animating lines</a>, for help in animating lines
+          </li>
+        </ul>
       </div>
 
     </section>
 
     <script src="bundle.js"></script>
-
-
   </body>
 </html>
