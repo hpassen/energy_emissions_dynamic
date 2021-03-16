@@ -327,7 +327,10 @@ function uxDynamic(data, id, defaults) {
     .data(['Measurement'])
     .join('div');
 
-  measures_dd.append('div').text((d) => d);
+  measures_dd
+    .append('div')
+    .text((d) => d)
+    .attr('class', 'tight');
 
   measures_dd
     .append('select')
@@ -361,7 +364,10 @@ function uxDynamic(data, id, defaults) {
     .data(['Energy'])
     .join('div');
 
-  dataset_dd.append('div').text((d) => d);
+  dataset_dd
+    .append('div')
+    .text((d) => d)
+    .attr('class', 'tight');
 
   dataset_dd
     .append('select')
@@ -394,7 +400,10 @@ function uxDynamic(data, id, defaults) {
     .data(['Geography'])
     .join('div');
 
-  geog_dd.append('div').text((d) => d);
+  geog_dd
+    .append('div')
+    .text((d) => d)
+    .attr('class', 'tight');
 
   geog_dd
     .append('select')
@@ -416,9 +425,7 @@ function uxDynamic(data, id, defaults) {
     .data((dim) => geogs_vars.map((state) => ({state, dim})))
     .join('option')
     .text((d) => d['state'])
-    .property('selected', (d) =>
-      d.dim === 'Geography' ? d['state'] === geog : d['state'] === geog,
-    );
+    .property('selected', (d) => d.dim === 'Geography');
 
   // Build containers for the plot
   buildContainers(id, defaults.xLabel, sizesStatic);
