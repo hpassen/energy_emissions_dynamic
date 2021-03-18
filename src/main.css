@@ -99,7 +99,26 @@ a {
 
 .dropdown {
   font-size: '10pt';
+  font-weight: bold;
   padding-right: 80px;
+}
+
+.label {
+  font-size: 10pt;
+}
+
+.source {
+  font-weight: bold;
+  font-size: 12pt;
+}
+
+.dataset {
+  font-style: italic;
+  font-size: 12pt;
+}
+
+.note {
+  font-size: 11pt;
 }
 
 .bump_bottom {
@@ -127,19 +146,6 @@ a {
   margin-bottom: 0;
 }
 
-.label {
-  font-size: 10pt;
-}
-
-.source {
-  font-weight: bold;
-  font-size: 12pt;
-}
-
-.dataset {
-  font-style: italic;
-  font-size: 12pt;
-}
 
 /* Scrollama CSS Config */
 article {
