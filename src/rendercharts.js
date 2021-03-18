@@ -1,3 +1,8 @@
+//
+// Functions to build and generate d3 charts
+//
+
+// Import Libraries
 import {select, selectAll} from 'd3-selection';
 import {scaleLinear, scaleBand, scaleOrdinal} from 'd3-scale';
 import {extent} from 'd3-array';
@@ -108,7 +113,7 @@ export function renderBar(dataset, id, year, sizes, colors) {
 
   const xScale = scaleBand().domain(xDomain).range([0, sizes.plotWidth]);
   const yScale = scaleLinear()
-    .domain([0, yDomain[1]])
+    .domain([0, yDomain[1] * 1.02])
     .range([0, sizes.plotHeight]);
 
   var xLab = select(id).select('.axisLabelX');
@@ -201,7 +206,7 @@ export function renderLines(
   const yDomain = extent(loc, (d) => d[yCol]);
   const xScale = scaleLinear().domain(xDomain).range([0, sizes.plotWidth]);
   const yScale = scaleLinear()
-    .domain([0, yDomain[1]])
+    .domain([0, yDomain[1] * 1.02])
     .range([sizes.plotHeight, 0]);
   const lineScale = line()
     .x((d) => xScale(d[xCol]))

@@ -42,3 +42,5 @@ https://worldpopulationreview.com/states/state-abbreviations
 
 - user fryford's post on animating lines, for instructions on animating lines: http://bl.ocks.org/fryford/2925ecf70ac9d9b51031
 
+
+    jw_score = jellyfish.jaro_winkler_similarity(getattr(rec1, val), getattr(rec2, val))

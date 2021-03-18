@@ -1,6 +1,8 @@
-// if the data you are going to import is small, then you can import it using es6 import
-// import MY_DATA from './app/data/example.json'
+//
+// Functions to build and generate interactive data visualization web app
+//
 
+// Import Libraries
 import {filter_geog, get_color, barFilter, columnHas} from './utils';
 import {get_cats} from './utils';
 import 'intersection-observer';
