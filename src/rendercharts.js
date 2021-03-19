@@ -120,6 +120,7 @@ export function renderBar(dataset, id, year, sizes, colors) {
   var chart = select(id).select('.chart');
   var legend = select(id).select('.legend');
   var plotContainer = select(id).select('.plotContainer');
+  var title = select(id).select('.title');
 
   // build the bars
   plotContainer
